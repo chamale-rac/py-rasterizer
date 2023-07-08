@@ -1,4 +1,7 @@
 import struct # to convert data to bytes
+from collections import namedtuple
+
+V2 = namedtuple('Point2', ['x', 'y']) # 2D point
 
 def char(c):
     # 1 byte
@@ -27,6 +30,8 @@ class Renderer(object):
         # self.glClearColor(0.5, 0.5, 0.5)
         # self.glClear()
 
+        self.glColor(1, 1, 1)
+
     # determining the color of each pixel
     def glClearColor(self, r,g,b):
         self.clearColor = color(r,g,b)
@@ -42,6 +47,17 @@ class Renderer(object):
     def glPoint(self, x, y, clr = None):
         if(x < self.width and x >= 0 and y < self.height and y >= 0): # check if the point is inside the frame
             self.pixels[int(x)][int(y)] = clr or self.currColor
+
+    def glLine(self, v0, v1, clr = None):
+        # bresenham's line algorithm
+        # y = mx + b
+        m = (v1.y - v0.y) / (v1.x - v0.x)
+        y = v0.y # the y value of the first point
+
+        for x in range(v0.x, v1.x + 1):
+            self.glPoint(x, int(y))
+            y += m
+
         
     # generating the file, framebuffer, image    
     def glFinish(self, filename):
