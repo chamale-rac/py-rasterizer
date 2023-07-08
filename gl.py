@@ -49,6 +49,7 @@ class Renderer(object):
             self.pixels[int(x)][int(y)] = clr or self.currColor
 
     def glLine(self, v0, v1, clr = None):
+        '''        
         # bresenham's line algorithm
         # y = mx + b
         m = (v1.y - v0.y) / (v1.x - v0.x)
@@ -57,11 +58,56 @@ class Renderer(object):
         for x in range(v0.x, v1.x + 1):
             self.glPoint(x, int(y))
             y += m
+        '''
 
+        x0 = int(v0.x)
+        x1 = int(v1.x)
+        y0 = int(v0.y)
+        y1 = int(v1.y)
+
+        # check if the line is steep
+        if x0 == x1 and y0 == y1:
+            self.glPoint(x0, y0)
+            return
+        
+        dy = abs(y1 - y0)
+        dx = abs(x1 - x0)
+
+        steep = dy > dx
+
+        # if the line is steep, we transpose the image, it means rotating 90 degrees theoretically
+        if steep:
+            x0, y0 = y0, x0
+            x1, y1 = y1, x1
+
+        # if the initial point is bigger than the last point, we swap them
+        if x0 > x1:    
+            x0, x1 = x1, x0
+            y0, y1 = y1, y0
+
+        dy = abs(y1 - y0)
+        dx = abs(x1 - x0)
+
+        offset = 0
+        limit = 0.5
+        m = dy/dx
+        y = y0
+         
+        for x in range(x0, x1 + 1):
+            if steep:
+                self.glPoint(int(y), x, clr or self.currColor)
+            else:
+                self.glPoint(x, int(y), clr or self.currColor)
+            
+            offset += m
+
+            if offset >= limit:
+                y += 1 if y0 < y1 else -1; limit += 1
         
     # generating the file, framebuffer, image    
     def glFinish(self, filename):
         with open(filename, 'wb') as file:
+            # link to the format http://www.ece.ualberta.ca/~elliott/ee552/studentAppNotes/2003_w/misc/bmp_file_format/bmp_file_format.htm
             # header 
             file.write(char('B'))
             file.write(char('M'))
