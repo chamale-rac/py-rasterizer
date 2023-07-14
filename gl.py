@@ -27,10 +27,14 @@ class Renderer(object):
         self.width = width
         self.height = height
 
-        # self.glClearColor(0.5, 0.5, 0.5)
-        # self.glClear()
-
+        self.glClearColor(0, 0, 0)
+        self.glClear()
         self.glColor(1, 1, 1)
+
+    def glTriangle(self, v0, v1, v2, clr=None):
+        self.glLine(v0, v1, clr)
+        self.glLine(v1, v2, clr)
+        self.glLine(v2, v0, clr)
 
     # determining the color of each pixel
     def glClearColor(self, r,g,b):
