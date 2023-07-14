@@ -1,7 +1,14 @@
 import struct # to convert data to bytes
 from collections import namedtuple
+import numpy as np
 
 V2 = namedtuple('Point2', ['x', 'y']) # 2D point
+V3 = namedtuple('Point2', ['x', 'y', 'z']) # 3D point
+
+POINTS = 0
+LINES = 1
+TRIANGLES = 2
+QUADS = 3
 
 def char(c):
     # 1 byte
@@ -31,10 +38,49 @@ class Renderer(object):
         self.glClear()
         self.glColor(1, 1, 1)
 
+        self.vertexShader = None
+        self.fragmentShader = None
+
+        self.primitiveType = TRIANGLES
+        self.vertexBuffer = []
+
+
+
     def glTriangle(self, v0, v1, v2, clr=None):
-        self.glLine(v0, v1, clr)
-        self.glLine(v1, v2, clr)
-        self.glLine(v2, v0, clr)
+        self.glLine(v0, v1, clr or self.currColor)
+        self.glLine(v1, v2, clr or self.currColor)
+        self.glLine(v2, v0, clr or self.currColor)
+
+    def glModelMatrix(self, translate = (0,0,0), scale=(1,1,1)):
+        translation = np.matrix([[1,0,0,translate[0]],
+                               [0,1,0,translate[1]],
+                               [0,0,1,translate[2]],
+                               [0,0,0,1]])
+        scaleMat = np.matrix([[scale[0],0,0,0],
+                           [0,scale[1],0,0],
+                           [0,0,scale[2],0],
+                           [0,0,0,1]])
+        self.modelMatrix = translation * scaleMat
+
+    def glAddVertices(self, vertices):
+        for vertex in vertices:
+            self.vertexBuffer.append(vertex) 
+
+    def glPrimitiveAssembly(self, tVertices):
+        primitives = []
+
+        # convert the vertices to triangles
+        if self.primitiveType == TRIANGLES:
+            for i in range(0, len(tVertices), 3):
+                triangle = []
+                triangle.append(tVertices[i])
+                triangle.append(tVertices[i+1])
+                triangle.append(tVertices[i+2])
+                primitives.append(triangle)
+        return primitives
+
+
+        
 
     # determining the color of each pixel
     def glClearColor(self, r,g,b):
@@ -64,10 +110,10 @@ class Renderer(object):
             y += m
         '''
 
-        x0 = int(v0.x)
-        x1 = int(v1.x)
-        y0 = int(v0.y)
-        y1 = int(v1.y)
+        x0 = int(v0[0])
+        x1 = int(v1[0])
+        y0 = int(v0[1])
+        y1 = int(v1[1])
 
         # check if the line is steep
         if x0 == x1 and y0 == y1:
@@ -137,3 +183,26 @@ class Renderer(object):
             for y in range(self.height):
                 for x in range(self.width):
                     file.write(self.pixels[x][y])
+
+    def glRender(self):
+        transformedVertices = []
+
+        for vert in self.vertexBuffer:
+            if self.vertexShader:
+                transformedVertices.append(self.vertexShader(vert, modelMatrix = self.modelMatrix))
+            else:
+                transformedVertices.append(vert)
+
+        primitives = self.glPrimitiveAssembly(transformedVertices)
+
+        primColor = None
+        if self.fragmentShader:
+            primColor = self.fragmentShader()
+            primColor = color(primColor[0], primColor[1], primColor[2])
+        else:
+            primColor = self.currColor
+
+        for prim in primitives:
+            if self.primitiveType == TRIANGLES:
+                self.glTriangle(prim[0], prim[1], prim[2], primColor)
+
