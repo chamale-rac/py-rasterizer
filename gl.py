@@ -1,6 +1,7 @@
 import struct # to convert data to bytes
 from collections import namedtuple
 import numpy as np
+from obj import Obj
 
 V2 = namedtuple('Point2', ['x', 'y']) # 2D point
 V3 = namedtuple('Point2', ['x', 'y', 'z']) # 3D point
@@ -28,15 +29,35 @@ def color(r, g, b):
                   int(g * 255),
                   int(r * 255)])
 
+class Model(object):
+    def __init__(self, filename, translate=(0,0,0), rotate=(0,0,0), scale=(1,1,1)):
+        
+        
+        model = Obj(filename)
+
+        self.vertices = model.vertices
+        self.faces = model.faces
+        self.normals = model.normals
+        self.texcoords = model.texcoords
+
+        self.translate = translate
+        self.rotate = rotate
+        self.scale = scale
+
+
 class Renderer(object):
     # width and height of a frame
     def __init__(self, width, height):
         self.width = width
         self.height = height
 
+
         self.glClearColor(0, 0, 0)
         self.glClear()
         self.glColor(1, 1, 1)
+
+        
+        self.objects = []
 
         self.vertexShader = None
         self.fragmentShader = None
@@ -60,7 +81,7 @@ class Renderer(object):
                            [0,scale[1],0,0],
                            [0,0,scale[2],0],
                            [0,0,0,1]])
-        self.modelMatrix = translation * scaleMat
+        return translation * scaleMat
 
     def glAddVertices(self, vertices):
         for vertex in vertices:
@@ -184,14 +205,39 @@ class Renderer(object):
                 for x in range(self.width):
                     file.write(self.pixels[x][y])
 
+    def glLoadModel(self, filename, translate=(0,0,0), rotate=(0,0,0), scale=(1,1,1)):
+        model = Model(filename, translate, rotate, scale)
+        self.objects.append(model)
+
     def glRender(self):
         transformedVertices = []
 
-        for vert in self.vertexBuffer:
-            if self.vertexShader:
-                transformedVertices.append(self.vertexShader(vert, modelMatrix = self.modelMatrix))
-            else:
-                transformedVertices.append(vert)
+        count = 0
+        for model in self.objects:
+            mMat = self.glModelMatrix(model.translate, model.scale) 
+            for face in model.faces:
+                vertCount = len(face)
+                v0 = model.vertices[face[0][0] -1]
+                v1 = model.vertices[face[1][0] -1]
+                v2 = model.vertices[face[2][0] -1]
+                if vertCount == 4:
+                    v3 = model.vertices = [face[3][0] -1]
+                
+                # aqui no debo enviar uno por uno
+                if self.vertexShader:
+                    v0 = self.vertexShader(v0, modelMatrix = mMat)
+                    v1 = self.vertexShader(v1, modelMatrix = mMat)
+                    v2 = self.vertexShader(v2, modelMatrix = mMat)
+                    if vertCount == 4:
+                        v3 = self.vertexShader(v3, modelMatrix = mMat) # type: ignore
+
+                transformedVertices.append(v0)
+                transformedVertices.append(v1)
+                transformedVertices.append(v2)
+                if vertCount == 4:
+                    transformedVertices.append(v0)
+                    transformedVertices.append(v2)
+                    transformedVertices.append(v3) # type: ignore
 
         primitives = self.glPrimitiveAssembly(transformedVertices)
 
