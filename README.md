@@ -14,3 +14,6 @@ If you'd like to contribute to py-rasterizer, feel free to submit a pull request
 
 ## 📬 Contact
 If you have any questions or comments about py-rasterizer, please feel free to reach out to me at 4444@schr.tech
+
+## 🎭 Show off
+![output](https://github.com/chamale-rac/py-rasterizer/assets/63200593/c1e20f70-38cf-42b6-8f9c-f4cd050664b4)
