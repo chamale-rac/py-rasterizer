@@ -13,4 +13,4 @@ This program rasterize .obj files into BMP files. By the moment just some featur
 If you'd like to contribute to py-rasterizer, feel free to submit a pull request. The only restriction of use is for users who study Graphic Computing in 2023 second cycle at UVG. 
 
 ## 📬 Contact
-If you have any questions or comments about py-rasterizer, please feel free to reach out to us at 4444@schr.tech
+If you have any questions or comments about py-rasterizer, please feel free to reach out to me at 4444@schr.tech
