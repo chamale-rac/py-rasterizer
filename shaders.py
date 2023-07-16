@@ -1,3 +1,5 @@
+import random as rd
+
 def vertexShader(vertex, **kwargs):
     modelMatrix = kwargs['modelMatrix']
 
@@ -16,6 +18,14 @@ def vertexShader(vertex, **kwargs):
     # in the future there will be some work here
     return vt
 
+def getRandomFragmentShader(**kwargs):
+    # with random colors between 0.5 and 1
+    a = 0.5
+    b = 1
+    color = [rd.uniform(a, b), rd.uniform(a, b), rd.uniform(a, b)]
+    # cool color: (172, 243, 209)
+    return color
+
 def fragmentShader(**kwargs):
-    color = (1, 0, 0)
+    color = (172/255, 243/255, 209/255)
     return color

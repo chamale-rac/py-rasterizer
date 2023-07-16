@@ -15,6 +15,11 @@ class Obj(object):
                 prefix, value = re.split(r'\s+', line, 1) # split the line in two, the first part is the key, the second part is the value
             except:
                 continue
+            
+            #value remove blank spaces at the beginning and at the end
+            value = value.strip() 
+            # prefix por si acaso
+            prefix = prefix.strip()
 
             if prefix == 'v': # vertices
                 self.vertices.append(list(map(float, value.split(' ')))) # convert the string to float, each element of the list       
@@ -23,5 +28,6 @@ class Obj(object):
             elif prefix == 'vn': # normals
                 self.normals.append(list(map(float, value.split(' ')))) # convert the string to float, each element of the list
             elif prefix == 'f': # faces
-                self.faces.append([list(map(int, vert.split('/'))) for vert in value.split(' ')])
-                 
+                    facesAppend = [list(map(int, vert.split('/'))) for vert in value.split(' ')]
+                    self.faces.append(facesAppend)
+             
