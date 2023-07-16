@@ -1,7 +1,5 @@
-from gl import Renderer, V2, V3, color
-import shaders
-import random
-from obj import Obj
+from src.gl import Renderer
+import src.shaders as shaders
 
 width = 1920
 height = 1080
