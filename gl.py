@@ -72,16 +72,47 @@ class Renderer(object):
         self.glLine(v1, v2, clr or self.currColor)
         self.glLine(v2, v0, clr or self.currColor)
 
-    def glModelMatrix(self, translate = (0,0,0), scale=(1,1,1)):
+    def glModelMatrix(self, translate=(0,0,0), scale=(1,1,1), rotate=(0,0,0)):
+        # Create translation matrix
         translation = np.matrix([[1,0,0,translate[0]],
-                               [0,1,0,translate[1]],
-                               [0,0,1,translate[2]],
-                               [0,0,0,1]])
+                                [0,1,0,translate[1]],
+                                [0,0,1,translate[2]],
+                                [0,0,0,1]])
+
+        # Create scale matrix
         scaleMat = np.matrix([[scale[0],0,0,0],
-                           [0,scale[1],0,0],
-                           [0,0,scale[2],0],
-                           [0,0,0,1]])
-        return translation * scaleMat
+                            [0,scale[1],0,0],
+                            [0,0,scale[2],0],
+                            [0,0,0,1]])
+
+        # Create rotation matrix
+        # Convert degrees to radians
+        rx, ry, rz = np.deg2rad(rotate)
+        cosrx, sinrx = np.cos(rx), np.sin(rx)
+        cosry, sinry = np.cos(ry), np.sin(ry)
+        cosrz, sinrz = np.cos(rz), np.sin(rz)
+
+        # Create rotation matrices
+        rotx = np.matrix([[1, 0, 0, 0],
+                        [0, cosrx, -sinrx, 0],
+                        [0, sinrx, cosrx, 0],
+                        [0, 0, 0, 1]])
+
+        roty = np.matrix([[cosry, 0, sinry, 0],
+                        [0, 1, 0, 0],
+                        [-sinry, 0, cosry, 0],
+                        [0, 0, 0, 1]])
+
+        rotz = np.matrix([[cosrz, -sinrz, 0, 0],
+                        [sinrz, cosrz, 0, 0],
+                        [0, 0, 1, 0],
+                        [0, 0, 0, 1]])
+
+        # Combine rotation matrices
+        rotation = rotz * roty * rotx
+
+        # Combine translation, scale, and rotation matrices
+        return translation * rotation * scaleMat
 
     def glAddVertices(self, vertices):
         for vertex in vertices:
@@ -214,14 +245,14 @@ class Renderer(object):
 
         count = 0
         for model in self.objects:
-            mMat = self.glModelMatrix(model.translate, model.scale) 
+            mMat = self.glModelMatrix(model.translate, model.scale, model.rotate) 
             for face in model.faces:
                 vertCount = len(face)
                 v0 = model.vertices[face[0][0] -1]
                 v1 = model.vertices[face[1][0] -1]
                 v2 = model.vertices[face[2][0] -1]
                 if vertCount == 4:
-                    v3 = model.vertices = [face[3][0] -1]
+                    v3 = model.vertices[face[3][0] -1]
                 
                 # aqui no debo enviar uno por uno
                 if self.vertexShader:
