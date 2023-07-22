@@ -18,3 +18,4 @@ rend.glLoadModel( modelsFolder + 'plane.obj', translate=(width/2-
 rend.glRender()
 
 rend.glFinish('output.bmp')
+

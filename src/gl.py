@@ -68,11 +68,43 @@ class Renderer(object):
         self.vertexBuffer = []
 
 
+    def glTriangle(self, A, B, C, clr=None):
+        if A[1] < B[1]:
+            A, B = B, A
+        if A[1] < C[1]:
+            A, C = C, A
+        if B[1] < C[1]:
+            B, C = C, B
 
-    def glTriangle(self, v0, v1, v2, clr=None):
-        self.glLine(v0, v1, clr or self.currColor)
-        self.glLine(v1, v2, clr or self.currColor)
-        self.glLine(v2, v0, clr or self.currColor)
+        self.glLine(A, B, clr or self.currColor)
+        self.glLine(B, C, clr or self.currColor)
+        self.glLine(C, A, clr or self.currColor)
+
+        def flatBottom(A, B, C):
+            try:                    
+                mBA = (B[0] - A[0]) / (B[1] - A[1])
+                mCA = (C[0] - A[0]) / (C[1] - A[1])
+            except:
+                pass
+            else:
+                x0 = B[0]
+                x1 = B[0]
+
+                for y in range(B[1], A[1]):
+                    self.glLine((x0, y), (x1, y))
+                    x0 += mBA
+                    x1 += mCA
+    
+            
+        if B[1] == C[1]:
+            # parte plana abajo
+            flatBottom(A, B, C)
+            pass
+        elif A[1] == B[1]:
+            pass
+        else:
+            # dibujar ambos casos con un nuevo vertices
+            pass
 
     def glModelMatrix(self, translate=(0,0,0), scale=(1,1,1), rotate=(0,0,0)):
         translation = [[1,0,0,translate[0]],
