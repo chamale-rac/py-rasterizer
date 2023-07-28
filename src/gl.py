@@ -89,11 +89,16 @@ class Renderer(object):
                 u, v, w = barycentricCoords(A, B, C, P)
 
                 if 0 <= u <= 1 and 0 <= v <= 1 and 0 <= w <= 1:
-                    colorP = color(u * colorA[0] + v * colorB[0] + w * colorC[0],
-                                   u * colorA[1] + v *
-                                   colorB[1] + w * colorC[1],
-                                   u * colorA[2] + v * colorB[2] + w * colorC[2])
-                    self.glPoint(x, y, colorP)
+                    z = u * A[2] + v * B[2] + w * C[2]
+
+                    if z < self.zbuffer[x][y]:
+                        self.zbuffer[x][y] = z
+
+                        colorP = color(u * colorA[0] + v * colorB[0] + w * colorC[0],
+                                       u * colorA[1] + v *
+                                       colorB[1] + w * colorC[1],
+                                       u * colorA[2] + v * colorB[2] + w * colorC[2])
+                        self.glPoint(x, y, colorP)
 
     def glModelMatrix(self, translate=(0, 0, 0), scale=(1, 1, 1), rotate=(0, 0, 0)):
         translation = [[1, 0, 0, translate[0]],
@@ -163,6 +168,9 @@ class Renderer(object):
     def glClear(self):
         self.pixels = [[self.clearColor for y in range(self.height)]
                        for x in range(self.width)]
+
+        self.zbuffer = [[float('inf') for y in range(self.height)]
+                        for x in range(self.width)]
 
     def glPoint(self, x, y, clr=None):
         # check if the point is inside the frame
@@ -297,13 +305,13 @@ class Renderer(object):
 
         primitives = self.glPrimitiveAssembly(transformedVertices)
 
-        primColor = None
-        if self.fragmentShader:
-            primColor = self.fragmentShader()
-            primColor = color(primColor[0], primColor[1], primColor[2])
-        else:
-            primColor = self.currColor
+        # primColor = None
+        # if self.fragmentShader:
+        #     primColor = self.fragmentShader()
+        #     primColor = color(primColor[0], primColor[1], primColor[2])
+        # else:
+        #     primColor = self.currColor
 
         for prim in primitives:
             if self.primitiveType == TRIANGLES:
-                self.glTriangle(prim[0], prim[1], prim[2], primColor)
+                self.glTriangle_bc(prim[0], prim[1], prim[2])
