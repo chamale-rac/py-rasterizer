@@ -17,7 +17,7 @@ rend.fragmentShader = shaders.fragmentShader  # type: ignore
 
 # rend.glRender()
 
-triangle = [(100, 100), (250, 500), (450, 180)]
+triangle = [(100, 100), (250, 400), (400, 100)]
 
 rend.glTriangle_bc(triangle[0], triangle[1], triangle[2])
 

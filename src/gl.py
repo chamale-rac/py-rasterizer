@@ -79,13 +79,21 @@ class Renderer(object):
         minY = round(min(A[1], B[1], C[1]))
         maxY = round(max(A[1], B[1], C[1]))
 
+        colorA = (1, 0, 0)
+        colorB = (0, 1, 0)
+        colorC = (0, 0, 1)
+
         for x in range(minX, maxX + 1):
             for y in range(minY, maxY + 1):
                 P = (x, y)
                 u, v, w = barycentricCoords(A, B, C, P)
 
                 if 0 <= u <= 1 and 0 <= v <= 1 and 0 <= w <= 1:
-                    self.glPoint(x, y)
+                    colorP = color(u * colorA[0] + v * colorB[0] + w * colorC[0],
+                                   u * colorA[1] + v *
+                                   colorB[1] + w * colorC[1],
+                                   u * colorA[2] + v * colorB[2] + w * colorC[2])
+                    self.glPoint(x, y, colorP)
 
     def glModelMatrix(self, translate=(0, 0, 0), scale=(1, 1, 1), rotate=(0, 0, 0)):
         translation = [[1, 0, 0, translate[0]],
