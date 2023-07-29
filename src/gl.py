@@ -3,6 +3,7 @@ from collections import namedtuple
 import math  # the teacher allows just this external library
 from .obj import Obj
 from .utils import matrix_x_matrix, barycentricCoords
+from .texture import Texture
 
 V2 = namedtuple('Point2', ['x', 'y'])  # 2D point
 V3 = namedtuple('Point2', ['x', 'y', 'z'])  # 3D point
@@ -49,6 +50,9 @@ class Model(object):
         self.rotate = rotate
         self.scale = scale
 
+    def LoadTexture(self, path):
+        self.texture = Texture(path)
+
 
 class Renderer(object):
     # width and height of a frame
@@ -68,12 +72,14 @@ class Renderer(object):
         self.primitiveType = TRIANGLES
         self.vertexBuffer = []
 
+        self.activeTexture = None
+
     def glTriangle(self, v0, v1, v2, clr=None):
         self.glLine(v0, v1, clr or self.currColor)
         self.glLine(v1, v2, clr or self.currColor)
         self.glLine(v2, v0, clr or self.currColor)
 
-    def glTriangle_bc(self, A, B, C):
+    def glTriangle_bc(self, A, B, C, vtA, vtB, vtC):
         minX = round(min(A[0], B[0], C[0]))
         maxX = round(max(A[0], B[0], C[0]))
         minY = round(min(A[1], B[1], C[1]))
@@ -94,11 +100,17 @@ class Renderer(object):
                     if z < self.zbuffer[x][y]:
                         self.zbuffer[x][y] = z
 
-                        colorP = color(u * colorA[0] + v * colorB[0] + w * colorC[0],
-                                       u * colorA[1] + v *
-                                       colorB[1] + w * colorC[1],
-                                       u * colorA[2] + v * colorB[2] + w * colorC[2])
-                        self.glPoint(x, y, colorP)
+                        uvs = (vtA[0] * u + vtB[0] * v + vtC[0] * w,
+                               vtA[1] * u + vtB[1] * v + vtC[1] * w)
+
+                        if self.fragmentShader != None:
+                            colorP = self.fragmentShader(
+                                texCoords=uvs, texture=self.activeTexture)
+
+                            self.glPoint(x, y, color(
+                                colorP[0], colorP[1], colorP[2]))
+                        else:
+                            self.glPoint(x, y, colorP)
 
     def glModelMatrix(self, translate=(0, 0, 0), scale=(1, 1, 1), rotate=(0, 0, 0)):
         translation = [[1, 0, 0, translate[0]],
@@ -144,16 +156,25 @@ class Renderer(object):
         for vertex in vertices:
             self.vertexBuffer.append(vertex)
 
-    def glPrimitiveAssembly(self, tVertices):
+    def glPrimitiveAssembly(self, tVertices, tTexCoords):
+
         primitives = []
 
         # convert the vertices to triangles
         if self.primitiveType == TRIANGLES:
             for i in range(0, len(tVertices), 3):
                 triangle = []
+
+                # Vertices
                 triangle.append(tVertices[i])
                 triangle.append(tVertices[i+1])
                 triangle.append(tVertices[i+2])
+
+                # TexCoords
+                triangle.append(tTexCoords[i])
+                triangle.append(tTexCoords[i+1])
+                triangle.append(tTexCoords[i+2])
+
                 primitives.append(triangle)
         return primitives
 
@@ -267,15 +288,20 @@ class Renderer(object):
                 for x in range(self.width):
                     file.write(self.pixels[x][y])
 
-    def glLoadModel(self, filename, translate=(0, 0, 0), rotate=(0, 0, 0), scale=(1, 1, 1)):
+    def glLoadModel(self, filename, texturePath, translate=(0, 0, 0), rotate=(0, 0, 0), scale=(1, 1, 1)):
+
         model = Model(filename, translate, rotate, scale)
+        model.LoadTexture(texturePath)
         self.objects.append(model)
 
     def glRender(self):
         transformedVertices = []
+        textureCoords = []
 
         count = 0
         for model in self.objects:
+            self.activeTexture = model.texture
+
             mMat = self.glModelMatrix(
                 model.translate, model.scale, model.rotate)
             for face in model.faces:
@@ -303,7 +329,22 @@ class Renderer(object):
                     transformedVertices.append(v2)
                     transformedVertices.append(v3)  # type: ignore
 
-        primitives = self.glPrimitiveAssembly(transformedVertices)
+                vt0 = model.texcoords[face[0][1] - 1]
+                vt1 = model.texcoords[face[1][1] - 1]
+                vt2 = model.texcoords[face[2][1] - 1]
+                if vertCount == 4:
+                    vt3 = model.texcoords[face[3][1] - 1]
+
+                textureCoords.append(vt0)
+                textureCoords.append(vt1)
+                textureCoords.append(vt2)
+                if vertCount == 4:
+                    textureCoords.append(vt0)
+                    textureCoords.append(vt2)
+                    textureCoords.append(vt3)
+
+        primitives = self.glPrimitiveAssembly(
+            transformedVertices, textureCoords)
 
         # primColor = None
         # if self.fragmentShader:
@@ -314,4 +355,7 @@ class Renderer(object):
 
         for prim in primitives:
             if self.primitiveType == TRIANGLES:
-                self.glTriangle_bc(prim[0], prim[1], prim[2])
+                # first 3 vertices are the triangle
+                # next 3 correspond to the texture coordinates
+                self.glTriangle_bc(prim[0], prim[1], prim[2],
+                                   prim[3], prim[4], prim[5])

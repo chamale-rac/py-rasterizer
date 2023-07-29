@@ -21,6 +21,8 @@ def matrix_x_matrix(a, b):
                      for row_a in a]
     return result_matrix
 
+# TODO check update formula on 28 jul class.
+
 
 def barycentricCoords(A, B, C, P):
     areaABC = (B[1] - C[1]) * (A[0] - C[0]) + (C[0] - B[0]) * (A[1] - C[1])

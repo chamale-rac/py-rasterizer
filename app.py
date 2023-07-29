@@ -10,13 +10,21 @@ rend = Renderer(width, height)
 rend.vertexShader = shaders.vertexShader  # type: ignore
 rend.fragmentShader = shaders.fragmentShader  # type: ignore
 
-rend.glLoadModel(modelsFolder + 'goose.obj', translate=(width/2 -
-                 170, height/2 - 112, 0), scale=(100, 100, 100), rotate=(40, 40, 35))
+rend.glLoadModel(modelsFolder + 'face.obj',
+                 texturePath=modelsFolder + 'textures/face.bmp',
+                 translate=(width/2 -
+                            170, height/2 - 112, 0), scale=(400, 400, 400), rotate=(40, 40, 35))
+
+rend.glLoadModel(modelsFolder + 'face.obj',
+                 texturePath=modelsFolder + 'textures/face.bmp',
+                 translate=(width/4 -
+                            170, height/4 - 112, 0), scale=(400, 400, 400), rotate=(40, 90, 35))
 
 # rend.glLoadModel(modelsFolder + 'plane.obj', translate=(width/2 -
 #                                                         150, height/2-100, 0), scale=(1700, 1700, 1700), rotate=(40, 50, 40))
 
 rend.glRender()
+
 
 # triangle = [(100, 100), (250, 400), (400, 100)]
 
