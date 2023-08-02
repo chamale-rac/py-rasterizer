@@ -1,4 +1,4 @@
-# 🐍 py-rasterizer 🖼️
+# 🐍 py-rasterizer 🖼️ AKA R2: Textures
 Welcome to the py-rasterizer repository! This Python-based implementation is a powerful (giño giño...) tool for rasterizing BMP files.
 
 ## 🚀 Getting Started
