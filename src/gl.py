@@ -97,20 +97,26 @@ class Renderer(object):
                 if 0 <= u <= 1 and 0 <= v <= 1 and 0 <= w <= 1:
                     z = u * A[2] + v * B[2] + w * C[2]
 
-                    if z < self.zbuffer[x][y]:
-                        self.zbuffer[x][y] = z
+                    try:
+                        zget = self.zbuffer[x][y]
+                    except:
+                        zget = None
 
-                        uvs = (vtA[0] * u + vtB[0] * v + vtC[0] * w,
-                               vtA[1] * u + vtB[1] * v + vtC[1] * w)
+                    if zget != None:
+                        if z < zget:
+                            self.zbuffer[x][y] = z
 
-                        if self.fragmentShader != None:
-                            colorP = self.fragmentShader(
-                                texCoords=uvs, texture=self.activeTexture)
+                            uvs = (vtA[0] * u + vtB[0] * v + vtC[0] * w,
+                                   vtA[1] * u + vtB[1] * v + vtC[1] * w)
 
-                            self.glPoint(x, y, color(
-                                colorP[0], colorP[1], colorP[2]))
-                        else:
-                            self.glPoint(x, y, colorP)
+                            if self.fragmentShader != None:
+                                colorP = self.fragmentShader(
+                                    texCoords=uvs, texture=self.activeTexture)
+
+                                self.glPoint(x, y, color(
+                                    colorP[0], colorP[1], colorP[2]))
+                            else:
+                                self.glPoint(x, y, colorP)
 
     def glModelMatrix(self, translate=(0, 0, 0), scale=(1, 1, 1), rotate=(0, 0, 0)):
         translation = [[1, 0, 0, translate[0]],
