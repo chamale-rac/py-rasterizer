@@ -1,3 +1,4 @@
+from utils.emath import evector
 
 
 def vertex_shader(vertex, **kwargs):
@@ -15,12 +16,12 @@ def vertex_shader(vertex, **kwargs):
     projection_matrix = kwargs["projection_matrix"]
     viewport_matrix = kwargs["viewport_matrix"]
 
-    vt = [vertex[0], vertex[1], vertex[2], 1]
+    vt = evector([vertex[0], vertex[1], vertex[2], 1])
     vt = viewport_matrix * projection_matrix * view_matrix * model_matrix @ vt
-    vt = vt.tolist()[0]
-    vt = [vt[0] / vt[3], vt[1] / vt[3], vt[2] / vt[3]]
+    vt = evector([vt.data[0] / vt.data[3], vt.data[1] /
+                 vt.data[3], vt.data[2] / vt.data[3]])
 
-    return vt
+    return vt.data[:3]
 
 
 def fragment_shader(**kwargs):

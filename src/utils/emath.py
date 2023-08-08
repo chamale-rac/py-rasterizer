@@ -1,13 +1,4 @@
-def factorial(n):
-    """Compute the factorial of a number.
-
-    Args:
-        n: The number to compute the factorial of.
-
-    Returns:
-        The factorial of n.
-    """
-    return 1 if n == 0 else n * factorial(n - 1)
+import math
 
 
 def is_close(a, b, rel_tol=1e-09):
@@ -59,48 +50,212 @@ def barycentric_coords(A, B, C, P):
         return None
 
 
-def pi(n=10000):
-    """Compute an approximation of pi using the Leibniz formula.
+class Matrix:
+    """
+    Represents a matrix.
+    """
+
+    def __init__(self, data) -> None:
+        """
+        Initialize the Matrix object.
+
+        Args:
+            data: A list of lists representing the matrix.
+        """
+        self.data = data
+        self.rows = len(data)
+        self.cols = len(data[0])
+
+    def __mul__(self, other) -> 'Matrix':
+        """
+        Multiply the matrix by another matrix or a scalar.
+
+        Args:
+            other: Another Matrix object or a scalar (int or float).
+
+        Returns:
+            The result of the multiplication as a new Matrix object.
+        """
+        if isinstance(other, Matrix):
+            result = [[0] * other.cols for _ in range(self.rows)]
+            for i in range(self.rows):
+                for j in range(other.cols):
+                    for k in range(self.cols):
+                        result[i][j] += self.data[i][k] * other.data[k][j]
+            return Matrix(result)
+        elif isinstance(other, (int, float)):
+            result = [[elem * other for elem in row] for row in self.data]
+            return Matrix(result)
+
+    def __matmul__(self, other) -> 'Vector':
+        """
+        Multiply the matrix by a vector (matrix-vector multiplication).
+
+        Args:
+            other: A Vector object.
+
+        Returns:
+            The result of the multiplication as a new Vector object.
+        """
+        if self.cols != len(other.data):
+            raise ValueError("Matrix and vector dimensions are not compatible")
+
+        result = [sum(self.data[i][j] * other.data[j]
+                      for j in range(self.cols)) for i in range(self.rows)]
+        return Vector(result)
+
+    def __sub__(self, other) -> 'Matrix':
+        """
+        Subtract another matrix from this matrix.
+
+        Args:
+            other: Another Matrix object.
+
+        Returns:
+            The result of the subtraction as a new Matrix object.
+        """
+        result = [[self.data[i][j] - other.data[i][j]
+                   for j in range(self.cols)] for i in range(self.rows)]
+        return Matrix(result)
+
+    def invert(self) -> 'Matrix':
+        """
+        Calculate the inverse of the matrix using Gauss-Jordan elimination.
+
+        Returns:
+            The inverse of the matrix as a new Matrix object.
+        """
+        if self.rows != self.cols:
+            raise ValueError("Matrix must be square for inversion")
+
+        n = self.rows
+        augmented_matrix = [[self.data[i][j] if j < n else 1 if j ==
+                             i + n else 0 for j in range(2 * n)] for i in range(n)]
+
+        # Perform Gauss-Jordan elimination
+        for i in range(n):
+            pivot = augmented_matrix[i][i]
+            if pivot == 0:
+                raise ValueError("Matrix is not invertible")
+
+            for j in range(2 * n):
+                augmented_matrix[i][j] /= pivot
+
+            for k in range(n):
+                if k != i:
+                    factor = augmented_matrix[k][i]
+                    for j in range(2 * n):
+                        augmented_matrix[k][j] -= factor * \
+                            augmented_matrix[i][j]
+
+        inverted_data = [[augmented_matrix[i][j]
+                          for j in range(n, 2 * n)] for i in range(n)]
+        return Matrix(inverted_data)
+
+    def __str__(self) -> str:
+        """
+        Return a string representation of the matrix.
+
+        Returns:
+            The string representation of the matrix.
+        """
+        return str(self.data)
+
+
+class Vector:
+    """
+    Represents a vector.
+    """
+
+    def __init__(self, data) -> None:
+        """
+        Initialize the Vector object.
+
+        Args:
+            data: A list representing the vector.
+        """
+        self.data = data
+
+    def __mul__(self, other) -> 'Vector':
+        """
+        Multiply the vector by a scalar.
+
+        Args:
+            other: A scalar (int or float).
+
+        Returns:
+            The result of the multiplication as a new Vector object.
+        """
+        result = [elem * other for elem in self.data]
+        return Vector(result)
+
+    def __sub__(self, other) -> 'Vector':
+        """
+        Subtract another vector from this vector.
+
+        Args:
+            other: Another Vector object.
+
+        Returns:
+            The result of the subtraction as a new Vector object.
+        """
+        result = [self.data[i] - other.data[i] for i in range(len(self.data))]
+        return Vector(result)
+
+    def normalize(self) -> 'Vector':
+        """
+        Calculate the normalized vector.
+
+        Returns:
+            The normalized vector as a new Vector object.
+        """
+        magnitude = math.sqrt(sum(elem ** 2 for elem in self.data))
+        # Return a normalized vector as a new Vector object
+        return self * (1.0 / magnitude)
+
+    def cross(self, other) -> 'Vector':
+        """
+        Calculate the cross product between this vector and another vector.
+
+        Args:
+            other: Another Vector object.
+
+        Returns:
+            The cross product as a new Vector object.
+        """
+        if len(self.data) != 3 or len(other.data) != 3:
+            raise ValueError("Cross product is only defined for 3D vectors")
+
+        result = [
+            self.data[1] * other.data[2] - self.data[2] * other.data[1],
+            self.data[2] * other.data[0] - self.data[0] * other.data[2],
+            self.data[0] * other.data[1] - self.data[1] * other.data[0]
+        ]
+
+        return Vector(result)
+
+
+def ematrix(data) -> Matrix:
+    """
+    Create a new Matrix object.
 
     Args:
-        n: The number of terms to use in the series. Defaults to 10000.
+        data: A list of lists representing the matrix.
 
     Returns:
-        An approximation of pi.
-
-    References:
-        https://proofwiki.org/wiki/Leibniz%27s_Formula_for_Pi
+        A new Matrix object.
     """
-    return 4 * sum((-1) ** k / (2 * k + 1) for k in range(n))
+    return Matrix(data)
 
 
-def sin(x, n=100):
-    """Compute an approximation of sin(x) using power series.
+def evector(data) -> Vector:
+    """
+    Create a new Vector object.
 
     Args:
-        x: The angle in radians.
-        n: The number of terms to use in the series. Defaults to 100.
+        data: A list representing the vector.
 
     Returns:
-        An approximation of sin(x).
-
-    References:
-        https://proofwiki.org/wiki/Power_Series_Expansion_for_Sine_Function
+        A new Vector object.
     """
-    return sum((-1) ** k * x ** (2 * k + 1) / factorial(2 * k + 1) for k in range(n))
-
-
-def cos(x, n=100):
-    """Compute an approximation of cos(x) using power series.
-
-    Args:
-        x: The angle in radians.
-        n: The number of terms to use in the series. Defaults to 100.
-
-    Returns:
-        An approximation of cos(x).
-
-    References:
-        https://proofwiki.org/wiki/Power_Series_Expansion_for_Cosine_Function
-    """
-    return sum((-1)**k * x**(2*k) / factorial(2*k) for k in range(n))
+    return Vector(data)

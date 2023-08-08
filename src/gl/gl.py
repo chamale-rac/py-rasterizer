@@ -1,7 +1,7 @@
 import numpy as np
 from math import pi, sin, cos, tan
 from utils.estruct import color
-from utils.emath import barycentric_coords
+from utils.emath import barycentric_coords, ematrix, evector
 from utils.efiles import bmp_blend
 
 from gl.model import Model
@@ -98,10 +98,37 @@ class Renderer:
         self.viewport_width = width
         self.viewport_height = height
 
-        self.viewport_matrix = np.matrix([[width/2, 0, 0, x + width/2],
-                                          [0, height/2, 0, y + height/2],
-                                          [0, 0, 0.5, 0.5],
-                                          [0, 0, 0, 1]])
+        self.viewport_matrix = ematrix([[width/2, 0, 0, x + width/2],
+                                        [0, height/2, 0, y + height/2],
+                                        [0, 0, 0.5, 0.5],
+                                        [0, 0, 0, 1]])
+
+    def look_at(self, cam_pos=(0, 0, 0), eye_pos=(0, 0, 0)):
+        """Sets the camera position and the eye position.
+
+        Args:
+            cam_pos (tuple, optional): Camera position. Defaults to (0,0,0).
+            eye_pos (tuple, optional): Eye position. Defaults to (0,0,0).
+        """
+        world_up = evector([0, 1, 0])
+
+        forward = evector(cam_pos) - evector(eye_pos)
+        forward = forward.normalize()
+
+        right = world_up.cross(forward)
+        right = right.normalize()
+
+        up = forward.cross(right)
+        up = up.normalize()
+
+        self.cam_matrix = ematrix([[right.data[0], up.data[0], forward.data[0], cam_pos[0]],
+                                   [right.data[1], up.data[1],
+                                       forward.data[1], cam_pos[1]],
+                                   [right.data[2], up.data[2],
+                                       forward.data[2], cam_pos[2]],
+                                   [0, 0, 0, 1]])
+
+        self.view_matrix = self.cam_matrix.invert()
 
     def cam_matrix(self, translate=(0, 0, 0), rotate=(0, 0, 0)):
         """Builds the camera matrix and its inverse (view matrix).
@@ -111,7 +138,7 @@ class Renderer:
             rotate (tuple, optional): Rotation vector. Defaults to (0, 0, 0).
         """
         self.cam_matrix = self.model_matrix(translate, rotate)
-        self.view_matrix = np.linalg.inv(self.cam_matrix)
+        self.view_matrix = self.cam_matrix.invert()
 
     def projection_matrix(self, n=0.1, f=1000, fov=60):
         """Builds the projection matrix.
@@ -130,24 +157,24 @@ class Renderer:
         t = tan((fov * pi / 180) / 2) * n
         r = t * aspect_ratio
 
-        self.projection_matrix = np.matrix([[n/r, 0, 0, 0],
-                                            [0, n/t, 0, 0],
-                                            [0, 0, -(f+n)/(f-n), -
-                                             (2*f*n)/(f-n)],
-                                            [0, 0, -1, 0]])
+        self.projection_matrix = ematrix([[n/r, 0, 0, 0],
+                                          [0, n/t, 0, 0],
+                                          [0, 0, -(f+n)/(f-n), -
+                                           (2*f*n)/(f-n)],
+                                          [0, 0, -1, 0]])
 
     def model_matrix(self, translate=(0, 0, 0), rotate=(0, 0, 0), scale=(1, 1, 1)):
-        translation = np.matrix([[1, 0, 0, translate[0]],
-                                 [0, 1, 0, translate[1]],
-                                 [0, 0, 1, translate[2]],
-                                 [0, 0, 0, 1]])
+        translation = ematrix([[1, 0, 0, translate[0]],
+                               [0, 1, 0, translate[1]],
+                               [0, 0, 1, translate[2]],
+                               [0, 0, 0, 1]])
 
         rot_mat = self.rotation_matrix(rotate[0], rotate[1], rotate[2])
 
-        scale_mat = np.matrix([[scale[0], 0, 0, 0],
-                              [0, scale[1], 0, 0],
-                              [0, 0, scale[2], 0],
-                              [0, 0, 0, 1]])
+        scale_mat = ematrix([[scale[0], 0, 0, 0],
+                             [0, scale[1], 0, 0],
+                             [0, 0, scale[2], 0],
+                             [0, 0, 0, 1]])
 
         return translation * rot_mat * scale_mat
 
@@ -156,20 +183,20 @@ class Renderer:
         yaw *= pi / 180
         roll *= pi / 180
 
-        rotation_x = np.matrix([[1, 0, 0, 0],
-                                [0, cos(pitch), -sin(pitch), 0],
-                                [0, sin(pitch), cos(pitch), 0],
-                                [0, 0, 0, 1]])
+        rotation_x = ematrix([[1, 0, 0, 0],
+                              [0, cos(pitch), -sin(pitch), 0],
+                              [0, sin(pitch), cos(pitch), 0],
+                              [0, 0, 0, 1]])
 
-        rotation_y = np.matrix([[cos(yaw), 0, sin(yaw), 0],
-                                [0, 1, 0, 0],
-                                [-sin(yaw), 0, cos(yaw), 0],
-                                [0, 0, 0, 1]])
+        rotation_y = ematrix([[cos(yaw), 0, sin(yaw), 0],
+                              [0, 1, 0, 0],
+                              [-sin(yaw), 0, cos(yaw), 0],
+                              [0, 0, 0, 1]])
 
-        rotation_z = np.matrix([[cos(roll), -sin(roll), 0, 0],
-                                [sin(roll), cos(roll), 0, 0],
-                                [0, 0, 1, 0],
-                                [0, 0, 0, 1]])
+        rotation_z = ematrix([[cos(roll), -sin(roll), 0, 0],
+                              [sin(roll), cos(roll), 0, 0],
+                              [0, 0, 1, 0],
+                              [0, 0, 0, 1]])
 
         return rotation_x * rotation_y * rotation_z
 
