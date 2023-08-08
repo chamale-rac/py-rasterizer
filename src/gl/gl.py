@@ -20,6 +20,7 @@ class Renderer:
         self.fragment_shader = None
         self.primitive_type = TRIANGLES
         self.active_texture = None
+        self.cam_matrix()
         self.clear()
 
     def clear(self):
@@ -80,6 +81,9 @@ class Renderer:
                 primitives.append(triangle)
 
         return primitives
+
+    def cam_matrix(self, translate=(0, 0, 0), rotate=(0, 0, 0)):
+        self.cam_matrix = self.model_matrix(translate, rotate)
 
     def model_matrix(self, translate=(0, 0, 0), rotate=(0, 0, 0), scale=(1, 1, 1)):
         translation = np.matrix([[1, 0, 0, translate[0]],
@@ -173,8 +177,8 @@ class Renderer:
 
     def gl_render(self):
 
-        transformedVerts = []
-        texCoords = []
+        transformed_verts = []
+        tex_coords = []
 
         for model in self.objects:
 
@@ -198,29 +202,29 @@ class Renderer:
                     if vertCount == 4:
                         v3 = self.vertex_shader(v3, model_matrix=mMat)
 
-                transformedVerts.append(v0)
-                transformedVerts.append(v1)
-                transformedVerts.append(v2)
+                transformed_verts.append(v0)
+                transformed_verts.append(v1)
+                transformed_verts.append(v2)
                 if vertCount == 4:
-                    transformedVerts.append(v0)
-                    transformedVerts.append(v2)
-                    transformedVerts.append(v3)
+                    transformed_verts.append(v0)
+                    transformed_verts.append(v2)
+                    transformed_verts.append(v3)
 
-                vt0 = model.texcoords[face[0][1] - 1]
-                vt1 = model.texcoords[face[1][1] - 1]
-                vt2 = model.texcoords[face[2][1] - 1]
+                vt0 = model.tex_coords[face[0][1] - 1]
+                vt1 = model.tex_coords[face[1][1] - 1]
+                vt2 = model.tex_coords[face[2][1] - 1]
                 if vertCount == 4:
-                    vt3 = model.texcoords[face[3][1] - 1]
+                    vt3 = model.tex_coords[face[3][1] - 1]
 
-                texCoords.append(vt0)
-                texCoords.append(vt1)
-                texCoords.append(vt2)
+                tex_coords.append(vt0)
+                tex_coords.append(vt1)
+                tex_coords.append(vt2)
                 if vertCount == 4:
-                    texCoords.append(vt0)
-                    texCoords.append(vt2)
-                    texCoords.append(vt3)
+                    tex_coords.append(vt0)
+                    tex_coords.append(vt2)
+                    tex_coords.append(vt3)
 
-        primitives = self.primitive_assembly(transformedVerts, texCoords)
+        primitives = self.primitive_assembly(transformed_verts, tex_coords)
 
         for prim in primitives:
             if self.primitive_type == TRIANGLES:

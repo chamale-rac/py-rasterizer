@@ -19,5 +19,5 @@ class Obj(object):
         Returns:
             A tuple containing the vertex, texture coordinate, normal, and face data.
         """
-        self.vertices, self.texcoords, self.normals, self.faces = obj_model(
+        self.vertices, self.tex_coords, self.normals, self.faces = obj_model(
             self.path)

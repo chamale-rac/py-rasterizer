@@ -42,7 +42,7 @@ def bmp_blend(filename, width, height, pixels):
 
 
 def bmp_texture(filename):
-    """Read a BMP file and return its pixel data.
+    """Read a BMP file and return its pixel data. BMP files must be 24 bits per pixel.
 
     Args:
         filename: The name of the BMP file to read.
@@ -90,7 +90,7 @@ def obj_model(filename):
         lines = file.read().splitlines()
 
     vertices = []
-    texcoords = []
+    tex_coords = []
     normals = []
     faces = []
 
@@ -111,7 +111,7 @@ def obj_model(filename):
             vertices.append(list(map(float, value.split(' '))))
         elif prefix == 'vt':  # texture coordinates
             # convert the string to float, each element of the list
-            texcoords.append(list(map(float, value.split(' '))))
+            tex_coords.append(list(map(float, value.split(' '))))
         elif prefix == 'vn':  # normals
             # convert the string to float, each element of the list
             normals.append(list(map(float, value.split(' '))))
@@ -120,4 +120,4 @@ def obj_model(filename):
                            for vert in value.split(' ')]
             faces.append(facesAppend)
 
-    return vertices, texcoords, normals, faces
+    return vertices, tex_coords, normals, faces

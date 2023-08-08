@@ -31,7 +31,7 @@ class Model:
         model = Obj(filename)
 
         self.vertices = model.vertices
-        self.texcoords = model.texcoords
+        self.tex_coords = model.tex_coords
         self.normals = model.normals
         self.faces = model.faces
 
