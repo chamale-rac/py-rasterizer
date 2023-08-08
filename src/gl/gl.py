@@ -118,7 +118,7 @@ class Renderer:
 
         return rotation_x * rotation_y * rotation_z
 
-    def glLine(self, v0, v1, clr=None):
+    def line(self, v0, v1, clr=None):
 
         x0 = int(v0[0])
         x1 = int(v1[0])
@@ -126,7 +126,7 @@ class Renderer:
         y1 = int(v1[1])
 
         if x0 == x1 and y0 == y1:
-            self.glPoint(x0, y0)
+            self.point(x0, y0)
             return
 
         dy = abs(y1 - y0)
@@ -152,9 +152,9 @@ class Renderer:
 
         for x in range(x0, x1 + 1):
             if steep:
-                self.glPoint(y, x, clr or self.currColor)
+                self.point(y, x, clr or self.currColor)
             else:
-                self.glPoint(x, y, clr or self.currColor)
+                self.point(x, y, clr or self.currColor)
 
             offset += m
 
@@ -178,8 +178,8 @@ class Renderer:
 
         for model in self.objects:
 
-            self.activeTexture = model.texture
-            mMat = self.glmodel_matrix(
+            self.active_texture = model.texture
+            mMat = self.model_matrix(
                 model.translate, model.rotate, model.scale)
 
             for face in model.faces:
@@ -220,12 +220,12 @@ class Renderer:
                     texCoords.append(vt2)
                     texCoords.append(vt3)
 
-        primitives = self.glPrimitiveAssembly(transformedVerts, texCoords)
+        primitives = self.primitive_assembly(transformedVerts, texCoords)
 
         for prim in primitives:
-            if self.primitiveType == TRIANGLES:
-                self.glTriangle(prim[0], prim[1], prim[2],
-                                prim[3], prim[4], prim[5])
+            if self.primitive_type == TRIANGLES:
+                self.triangle(prim[0], prim[1], prim[2],
+                              prim[3], prim[4], prim[5])
 
     def gl_finish(self, filename):
         bmp_blend(filename, self.width, self.height, self.pixels)
