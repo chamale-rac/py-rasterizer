@@ -18,5 +18,6 @@ That's all, now check the results on models on [./out/](./out/)
 
 ## 🎭 Show off
 
-![output (1)](https://github.com/chamale-rac/py-rasterizer/assets/63200593/49898abb-5fcd-4189-adb2-ae4851b956e1)
-You can find the original render as [output.bmp](./output.bmp)
+![image](https://github.com/chamale-rac/py-rasterizer/assets/63200593/31844e74-0d83-449f-988c-9de2b6a3b178)
+
+You can find the original render as [dutch_angle.bmp](./out/dutch_angle.bmp)
