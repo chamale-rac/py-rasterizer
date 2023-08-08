@@ -1,5 +1,5 @@
 import numpy as np
-from math import pi, sin, cos
+from math import pi, sin, cos, tan
 from utils.estruct import color
 from utils.emath import barycentric_coords
 from utils.efiles import bmp_blend
@@ -22,6 +22,7 @@ class Renderer:
         self.active_texture = None
         self.viewport(0, 0, width, height)
         self.cam_matrix()
+        self.projection_matrix()
         self.clear()
 
     def clear(self):
@@ -106,6 +107,29 @@ class Renderer:
         """
         self.cam_matrix = self.model_matrix(translate, rotate)
         self.view_matrix = np.linalg.inv(self.cam_matrix)
+
+    def projection_matrix(self, n=0.1, f=1000, fov=60):
+        """Builds the projection matrix.
+
+        Args:
+            n (float, optional): Near plane. Defaults to 0.1.
+            f (int, optional): Far plane. Defaults to 1000.
+            fov (int, optional): Field of view. Defaults to 60.
+
+        Returns:
+            aspect_ratio (float): Aspect ratio of the viewport.
+            t (float): Top plane.
+            r (float): Right plane.
+        """
+        aspect_ratio = self.viewport_width / self.viewport_height
+        t = tan((fov * pi / 180) / 2) * n
+        r = t * aspect_ratio
+
+        self.projection_matrix = np.matrix([[n/r, 0, 0, 0],
+                                            [0, n/t, 0, 0],
+                                            [0, 0, -(f+n)/(f-n), -
+                                             (2*f*n)/(f-n)],
+                                            [0, 0, -1, 0]])
 
     def model_matrix(self, translate=(0, 0, 0), rotate=(0, 0, 0), scale=(1, 1, 1)):
         translation = np.matrix([[1, 0, 0, translate[0]],
