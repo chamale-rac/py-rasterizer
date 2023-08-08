@@ -20,6 +20,7 @@ class Renderer:
         self.fragment_shader = None
         self.primitive_type = TRIANGLES
         self.active_texture = None
+        self.viewport(0, 0, width, height)
         self.cam_matrix()
         self.clear()
 
@@ -82,8 +83,29 @@ class Renderer:
 
         return primitives
 
+    def viewport(self, x, y, width, height):
+        """Sets the viewport to render the image.
+
+        Args:
+            x (int): X coordinate of the viewport.
+            y (int): Y coordinate of the viewport.
+            width (int): Width of the viewport.
+            height (int): Height of the viewport.
+        """
+        self.viewport_x = x
+        self.viewport_y = y
+        self.viewport_width = width
+        self.viewport_height = height
+
     def cam_matrix(self, translate=(0, 0, 0), rotate=(0, 0, 0)):
+        """Builds the camera matrix and its inverse (view matrix).
+
+        Args:
+            translate (tuple, optional): Translation vector. Defaults to (0, 0, 0).
+            rotate (tuple, optional): Rotation vector. Defaults to (0, 0, 0).
+        """
         self.cam_matrix = self.model_matrix(translate, rotate)
+        self.view_matrix = np.linalg.inv(self.cam_matrix)
 
     def model_matrix(self, translate=(0, 0, 0), rotate=(0, 0, 0), scale=(1, 1, 1)):
         translation = np.matrix([[1, 0, 0, translate[0]],
