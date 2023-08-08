@@ -103,13 +103,18 @@ class Renderer:
                                         [0, 0, 0.5, 0.5],
                                         [0, 0, 0, 1]])
 
-    def look_at(self, cam_pos=(0, 0, 0), eye_pos=(0, 0, 0)):
-        """Sets the camera position and the eye position.
+    def look_at(self, cam_pos=(0, 0, 0), eye_pos=(0, 0, 0), rotateZ=0):
+        """Sets the camera position, eye position, and rotation.
 
         Args:
             cam_pos (tuple, optional): Camera position. Defaults to (0,0,0).
             eye_pos (tuple, optional): Eye position. Defaults to (0,0,0).
+            rotate (tuple, optional): Rotation angles in degrees (pitch, yaw, roll). Defaults to (0,0,0).
         """
+        import math
+
+        pitch, yaw, roll = map(math.radians, (0, 0, rotateZ))
+
         world_up = evector([0, 1, 0])
 
         forward = evector(cam_pos) - evector(eye_pos)
@@ -121,12 +126,22 @@ class Renderer:
         up = forward.cross(right)
         up = up.normalize()
 
-        self.cam_matrix = ematrix([[right.data[0], up.data[0], forward.data[0], cam_pos[0]],
-                                   [right.data[1], up.data[1],
-                                       forward.data[1], cam_pos[1]],
-                                   [right.data[2], up.data[2],
-                                       forward.data[2], cam_pos[2]],
-                                   [0, 0, 0, 1]])
+        rotation_matrix = ematrix([
+            [math.cos(yaw) * math.cos(roll), math.cos(yaw)
+             * math.sin(roll), -math.sin(yaw), 0],
+            [math.sin(pitch) * math.sin(yaw) * math.cos(roll) - math.cos(pitch) * math.sin(roll),
+             math.sin(pitch) * math.sin(yaw) * math.sin(roll) + math.cos(pitch) * math.cos(roll), math.sin(pitch) * math.cos(yaw), 0],
+            [math.cos(pitch) * math.sin(yaw) * math.cos(roll) + math.sin(pitch) * math.sin(roll),
+             math.cos(pitch) * math.sin(yaw) * math.sin(roll) - math.sin(pitch) * math.cos(roll), math.cos(pitch) * math.cos(yaw), 0],
+            [0, 0, 0, 1]
+        ])
+
+        self.cam_matrix = rotation_matrix * ematrix([
+            [right.data[0], up.data[0], forward.data[0], cam_pos[0]],
+            [right.data[1], up.data[1], forward.data[1], cam_pos[1]],
+            [right.data[2], up.data[2], forward.data[2], cam_pos[2]],
+            [0, 0, 0, 1]
+        ])
 
         self.view_matrix = self.cam_matrix.invert()
 

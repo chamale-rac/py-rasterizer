@@ -32,4 +32,6 @@ class Texture:
             y = int(v * self.height)
             return self.pixels[y][x]
         else:
-            return None
+            # Return white if the coordinates are outside the texture boundaries
+            # TODO return to None
+            return 1, 1, 1
