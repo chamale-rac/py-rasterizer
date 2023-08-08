@@ -98,6 +98,11 @@ class Renderer:
         self.viewport_width = width
         self.viewport_height = height
 
+        self.viewport_matrix = np.matrix([[width/2, 0, 0, x + width/2],
+                                          [0, height/2, 0, y + height/2],
+                                          [0, 0, 0.5, 0.5],
+                                          [0, 0, 0, 1]])
+
     def cam_matrix(self, translate=(0, 0, 0), rotate=(0, 0, 0)):
         """Builds the camera matrix and its inverse (view matrix).
 
