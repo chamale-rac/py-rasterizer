@@ -14,7 +14,7 @@ cd src
 python app.py
 ```
 
-That's all, now check the results on models on [./out/](./out/)
+That's all, now check the results on [./out/](./out/)
 
 ## 🎭 Show off
 
