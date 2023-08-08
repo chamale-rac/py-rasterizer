@@ -15,18 +15,11 @@ renderer.fragment_shader = shaders.fragment_shader
 renderer.gl_load_model(
     filename=f"{models_dir}/face.obj",
     texture_name=f"{textures_dir}/face.bmp",
-    translate=(width / 4, height / 2, 0),
+    translate=(width / 2, height / 2, 0),
     rotate=(0, 90, 0),
     scale=(150, 150, 150)
 )
 
-renderer.gl_load_model(
-    filename=f"{models_dir}/face.obj",
-    texture_name=f"{textures_dir}/face.bmp",
-    translate=(width * 3 / 4, height / 2, 0),
-    rotate=(0, 180, 0),
-    scale=(150, 150, 150)
-)
 
 renderer.gl_render()
 

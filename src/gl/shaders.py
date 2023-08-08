@@ -1,4 +1,3 @@
-import numpy as np
 
 
 def vertex_shader(vertex, **kwargs):
@@ -12,9 +11,12 @@ def vertex_shader(vertex, **kwargs):
         The transformed vertex coordinates after applying the vertex shader.
     """
     model_matrix = kwargs["model_matrix"]
+    view_matrix = kwargs["view_matrix"]
+    projection_matrix = kwargs["projection_matrix"]
+    viewport_matrix = kwargs["viewport_matrix"]
 
-    vt = np.array([vertex[0], vertex[1], vertex[2], 1])
-    vt = model_matrix @ vt
+    vt = [vertex[0], vertex[1], vertex[2], 1]
+    vt = viewport_matrix * projection_matrix * view_matrix * model_matrix @ vt
     vt = vt.tolist()[0]
     vt = [vt[0] / vt[3], vt[1] / vt[3], vt[2] / vt[3]]
 

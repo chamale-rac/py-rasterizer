@@ -234,7 +234,7 @@ class Renderer:
         for model in self.objects:
 
             self.active_texture = model.texture
-            mMat = self.model_matrix(
+            model_matrix = self.model_matrix(
                 model.translate, model.rotate, model.scale)
 
             for face in model.faces:
@@ -247,11 +247,15 @@ class Renderer:
                     v3 = model.vertices[face[3][0] - 1]
 
                 if self.vertex_shader:
-                    v0 = self.vertex_shader(v0, model_matrix=mMat)
-                    v1 = self.vertex_shader(v1, model_matrix=mMat)
-                    v2 = self.vertex_shader(v2, model_matrix=mMat)
+                    v0 = self.vertex_shader(v0, model_matrix=model_matrix, view_matrix=self.view_matrix,
+                                            projection_matrix=self.projection_matrix, viewport_matrix=self.viewport_matrix)
+                    v1 = self.vertex_shader(v1, model_matrix=model_matrix, view_matrix=self.view_matrix,
+                                            projection_matrix=self.projection_matrix, viewport_matrix=self.viewport_matrix)
+                    v2 = self.vertex_shader(v2, model_matrix=model_matrix, view_matrix=self.view_matrix,
+                                            projection_matrix=self.projection_matrix, viewport_matrix=self.viewport_matrix)
                     if vertCount == 4:
-                        v3 = self.vertex_shader(v3, model_matrix=mMat)
+                        v3 = self.vertex_shader(v3, model_matrix=model_matrix, view_matrix=self.view_matrix,
+                                                projection_matrix=self.projection_matrix, viewport_matrix=self.viewport_matrix)
 
                 transformed_verts.append(v0)
                 transformed_verts.append(v1)
