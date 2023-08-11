@@ -42,7 +42,11 @@ class Renderer:
         if 0 <= x < self.width and 0 <= y < self.height:
             self.pixels[x][y] = clr or self.curr_color
 
-    def triangle(self, A, B, C, vtA, vtB, vtC, triangle_normal):
+    def triangle(self, verts, tex_coords, normals):
+        A = verts[0]
+        B = verts[1]
+        C = verts[2]
+
         min_x = round(min(A[0], B[0], C[0]))
         max_x = round(max(A[0], B[0], C[0]))
         min_y = round(min(A[1], B[1], C[1]))
@@ -60,15 +64,14 @@ class Renderer:
 
                         if z < self.zbuffer[x][y]:
                             self.zbuffer[x][y] = z
-                            uvs = (u * vtA[0] + v * vtB[0] + w * vtC[0],
-                                   u * vtA[1] + v * vtB[1] + w * vtC[1])
 
                             if self.fragment_shader is not None:
                                 colorP = self.fragment_shader(
-                                    tex_coords=uvs,
                                     texture=self.active_texture,
-                                    triangle_normal=triangle_normal,
+                                    tex_coords=tex_coords,
+                                    normals=normals,
                                     directional_light=self.directional_light,
+                                    barycentric_coords=b_coords,
                                     cam_matrix=self.cam_matrix)
                                 self.point(x, y, color(
                                     colorP[0], colorP[1], colorP[2]))
@@ -81,13 +84,18 @@ class Renderer:
         if self.primitive_type == TRIANGLES:
             for i in range(0, len(t_verts), 3):
                 triangle = []
-                for j in range(3):
-                    triangle.append(t_verts[i + j])
-                for j in range(3):
-                    triangle.append(t_tex_coords[i + j])
+                c_verts = []
+                c_tex_coords = []
+                c_normals = []
 
-                triangle.append(normals[int(i/3)])
+                for j in range(3):
+                    c_verts.append(t_verts[i + j])
+                for j in range(3):
+                    c_tex_coords.append(t_tex_coords[i + j])
+                for j in range(3):
+                    c_normals.append(normals[i + j])
 
+                triangle = [c_verts, c_tex_coords, c_normals]
                 primitives.append(triangle)
 
         return primitives
@@ -301,15 +309,15 @@ class Renderer:
                 if vertCount == 4:
                     v3 = model.vertices[face[3][0] - 1]
 
-                first_triangle_normal = (
-                    evector(v1) - evector(v0)).cross(evector(v2) - evector(v0))
-                first_triangle_normal = first_triangle_normal.normalize()
-                normals.append(first_triangle_normal)
-                if vertCount == 4:
-                    second_triangle_normal = (
-                        evector(v2) - evector(v0)).cross(evector(v3) - evector(v0))
-                    second_triangle_normal = second_triangle_normal.normalize()
-                    normals.append(second_triangle_normal)
+                # first_triangle_normal = (
+                #     evector(v1) - evector(v0)).cross(evector(v2) - evector(v0))
+                # first_triangle_normal = first_triangle_normal.normalize()
+                # normals.append(first_triangle_normal)
+                # if vertCount == 4:
+                #     second_triangle_normal = (
+                #         evector(v2) - evector(v0)).cross(evector(v3) - evector(v0))
+                #     second_triangle_normal = second_triangle_normal.normalize()
+                #     normals.append(second_triangle_normal)
 
                 if self.vertex_shader:
                     v0 = self.vertex_shader(v0, model_matrix=model_matrix, view_matrix=self.view_matrix,
@@ -344,13 +352,26 @@ class Renderer:
                     tex_coords.append(vt2)
                     tex_coords.append(vt3)
 
+                vn0 = model.normals[face[0][2] - 1]
+                vn1 = model.normals[face[1][2] - 1]
+                vn2 = model.normals[face[2][2] - 1]
+                if vertCount == 4:
+                    vn3 = model.tex_coords[face[3][2] - 1]
+
+                normals.append(vn0)
+                normals.append(vn1)
+                normals.append(vn2)
+                if vertCount == 4:
+                    normals.append(vn0)
+                    normals.append(vn2)
+                    normals.append(vn3)
+
             primitives = self.primitive_assembly(
                 transformed_verts, tex_coords, normals)
 
             for prim in primitives:
                 if self.primitive_type == TRIANGLES:
-                    self.triangle(prim[0], prim[1], prim[2],
-                                  prim[3], prim[4], prim[5], prim[6])
+                    self.triangle(prim[0], prim[1], prim[2])
 
     def gl_finish(self, filename):
         bmp_blend(filename, self.width, self.height, self.pixels)

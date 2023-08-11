@@ -17,7 +17,7 @@ height = 540
 center = Model(f"{models_dir}/face.obj",
                translate=(0, 0, -5), scale=(1.5, 1.5, 1.5))
 center.load_texture(f"{textures_dir}/face.bmp")
-center.set_shaders(shaders.vertex_shader, shaders.flat_shader)
+center.set_shaders(shaders.vertex_shader, shaders.gouraud_shader)
 
 # right = Model(f"{models_dir}/face.obj",
 #               translate=(3, 0, -5), scale=(1.5, 1.5, 1.5))
