@@ -19,6 +19,7 @@ class Model:
         self.translate = translate
         self.rotate = rotate
         self.scale = scale
+        self.texture = None
         self.set_shaders(None, None)
 
     def load_model(self, filename: str) -> None:

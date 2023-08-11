@@ -45,18 +45,28 @@ def fragment_shader(**kwargs):
 
 
 def flat_shader(**kwargs):
+    tex_coords = kwargs["tex_coords"]
+    texture = kwargs["texture"]
     directional_light = kwargs["directional_light"]
     triangle_normal = kwargs["triangle_normal"]
 
+    b = 1.0
+    g = 1.0
+    r = 1.0
+
+    if texture is not None:
+        texture_color = texture.get_color(tex_coords[0], tex_coords[1])
+        b *= texture_color[2]
+        g *= texture_color[1]
+        r *= texture_color[0]
+
     intensity = triangle_normal.dot(directional_light.negate())
 
-    color = (intensity, intensity, intensity)
+    b *= intensity
+    g *= intensity
+    r *= intensity
 
     if intensity > 0:
-        return color
+        return r, g, b
     else:
         return (0, 0, 0)
-
-
-def ton_shader():
-    pass
