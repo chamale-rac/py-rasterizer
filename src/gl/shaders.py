@@ -79,13 +79,22 @@ def gouraud_shader(**kwargs):
     directional_light = kwargs["directional_light"]
     u, v, w = kwargs["barycentric_coords"]
 
-    normal = evector([u * nA[0] + v * nB[0] + w * nC[0],
-                      u * nA[1] + v * nB[1] + w * nC[1],
-                      u * nA[2] + v * nB[2] + w * nC[2]])
-
     b = 1.0
     g = 1.0
     r = 1.0
+
+    if texture is not None:
+        tU = u * tA[0] + v * tB[0] + w * tC[0]
+        tV = u * tA[1] + v * tB[1] + w * tC[1]
+
+        texture_color = texture.get_color(tU, tV)
+        b *= texture_color[2]
+        g *= texture_color[1]
+        r *= texture_color[0]
+
+    normal = evector([u * nA[0] + v * nB[0] + w * nC[0],
+                      u * nA[1] + v * nB[1] + w * nC[1],
+                      u * nA[2] + v * nB[2] + w * nC[2]])
 
     intensity = normal.dot(directional_light.negate())
 
