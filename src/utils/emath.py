@@ -252,6 +252,16 @@ class Vector:
                      for i in range(len(self.data)))
         return result
 
+    def negate(self) -> 'Vector':
+        """
+        Return the negated vector.
+
+        Returns:
+            The negated vector as a new Vector object.
+        """
+        result = [-elem for elem in self.data]
+        return Vector(result)
+
 
 def ematrix(data) -> Matrix:
     """

@@ -48,6 +48,8 @@ def flat_shader(**kwargs):
     directional_light = kwargs["directional_light"]
     triangle_normal = kwargs["triangle_normal"]
 
+    intensity = triangle_normal.dot(directional_light)
+
     color = (1, 1, 1)
 
     return color
