@@ -48,8 +48,15 @@ def flat_shader(**kwargs):
     directional_light = kwargs["directional_light"]
     triangle_normal = kwargs["triangle_normal"]
 
-    intensity = triangle_normal.dot(directional_light)
+    intensity = triangle_normal.dot(directional_light.negate())
 
-    color = (1, 1, 1)
+    color = (intensity, intensity, intensity)
 
-    return color
+    if intensity > 0:
+        return color
+    else:
+        return (0, 0, 0)
+
+
+def toon_shader():
+    pass

@@ -5,8 +5,8 @@ models_dir = "../models"
 textures_dir = models_dir + "/textures"
 out_dir = "../out"
 
-width = 1920
-height = 1080
+width = 960
+height = 540
 
 
 # 4 august

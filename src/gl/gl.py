@@ -24,7 +24,7 @@ class Renderer:
         self.cam_matrix()
         self.projection_matrix()
         self.clear()
-        self.directional_light = (1, 0, 0)
+        self.directional_light = evector([1, 0, 0])
 
     def clear(self):
         self.pixels = [[self.clear_color for _ in range(self.height)]
@@ -42,7 +42,7 @@ class Renderer:
         if 0 <= x < self.width and 0 <= y < self.height:
             self.pixels[x][y] = clr or self.curr_color
 
-    def triangle(self, A, B, C, vtA, vtB, vtC):
+    def triangle(self, A, B, C, vtA, vtB, vtC, triangle_normal):
         min_x = round(min(A[0], B[0], C[0]))
         max_x = round(max(A[0], B[0], C[0]))
         min_y = round(min(A[1], B[1], C[1]))
@@ -64,11 +64,6 @@ class Renderer:
                                    u * vtA[1] + v * vtB[1] + w * vtC[1])
 
                             if self.fragment_shader is not None:
-                                triangle_normal = (
-                                    evector(B) - evector(A)).cross(evector(C) - evector(A))
-                                # triangle_normal = np.cross(np.subtract(B,A), np.subtract(C,A))
-                                triangle_normal = triangle_normal.normalize()
-                                # triangle_normal = triangle_normal / np.linalg.norm(triangle_normal)
 
                                 colorP = self.fragment_shader(
                                     tex_coords=uvs,
@@ -80,7 +75,7 @@ class Renderer:
                             else:
                                 self.point(x, y)
 
-    def primitive_assembly(self, t_verts, t_tex_coords):
+    def primitive_assembly(self, t_verts, t_tex_coords, normals):
         primitives = []
 
         if self.primitive_type == TRIANGLES:
@@ -90,6 +85,9 @@ class Renderer:
                     triangle.append(t_verts[i + j])
                 for j in range(3):
                     triangle.append(t_tex_coords[i + j])
+
+                triangle.append(normals[int(i/3)])
+
                 primitives.append(triangle)
 
         return primitives
@@ -282,6 +280,7 @@ class Renderer:
 
         transformed_verts = []
         tex_coords = []
+        normals = []
 
         for model in self.objects:
 
@@ -297,6 +296,21 @@ class Renderer:
                 v2 = model.vertices[face[2][0] - 1]
                 if vertCount == 4:
                     v3 = model.vertices[face[3][0] - 1]
+
+                # triangle_normal = (
+                #     evector(B) - evector(A)).cross(evector(C) - evector(A))
+                # # triangle_normal = np.cross(np.subtract(B,A), np.subtract(C,A))
+                # triangle_normal = triangle_normal.normalize()
+                # # triangle_normal = triangle_normal / np.linalg.norm(triangle_normal)
+                first_triangle_normal = (
+                    evector(v1) - evector(v0)).cross(evector(v2) - evector(v0))
+                first_triangle_normal = first_triangle_normal.normalize()
+                normals.append(first_triangle_normal)
+                if vertCount == 4:
+                    second_triangle_normal = (
+                        evector(v2) - evector(v0)).cross(evector(v3) - evector(v0))
+                    second_triangle_normal = second_triangle_normal.normalize()
+                    normals.append(second_triangle_normal)
 
                 if self.vertex_shader:
                     v0 = self.vertex_shader(v0, model_matrix=model_matrix, view_matrix=self.view_matrix,
@@ -331,12 +345,13 @@ class Renderer:
                     tex_coords.append(vt2)
                     tex_coords.append(vt3)
 
-        primitives = self.primitive_assembly(transformed_verts, tex_coords)
+        primitives = self.primitive_assembly(
+            transformed_verts, tex_coords, normals)
 
         for prim in primitives:
             if self.primitive_type == TRIANGLES:
                 self.triangle(prim[0], prim[1], prim[2],
-                              prim[3], prim[4], prim[5])
+                              prim[3], prim[4], prim[5], prim[6])
 
     def gl_finish(self, filename):
         bmp_blend(filename, self.width, self.height, self.pixels)
