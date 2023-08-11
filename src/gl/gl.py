@@ -64,12 +64,12 @@ class Renderer:
                                    u * vtA[1] + v * vtB[1] + w * vtC[1])
 
                             if self.fragment_shader is not None:
-
                                 colorP = self.fragment_shader(
                                     tex_coords=uvs,
                                     texture=self.active_texture,
                                     triangle_normal=triangle_normal,
-                                    directional_light=self.directional_light)
+                                    directional_light=self.directional_light,
+                                    cam_matrix=self.cam_matrix)
                                 self.point(x, y, color(
                                     colorP[0], colorP[1], colorP[2]))
                             else:
@@ -271,9 +271,7 @@ class Renderer:
 
                 limit += 1
 
-    def gl_load_model(self, filename, texture_name, translate=(0, 0, 0), rotate=(0, 0, 0), scale=(1, 1, 1)):
-        model = Model(filename, texture_name, translate, rotate, scale)
-
+    def add_model(self, model):
         self.objects.append(model)
 
     def gl_render(self):
@@ -283,6 +281,12 @@ class Renderer:
         normals = []
 
         for model in self.objects:
+            transformed_verts = []
+            tex_coords = []
+            normals = []
+
+            self.vertex_shader = model.vertex_shader
+            self.fragment_shader = model.fragment_shader
 
             self.active_texture = model.texture
             model_matrix = self.model_matrix(
@@ -297,11 +301,6 @@ class Renderer:
                 if vertCount == 4:
                     v3 = model.vertices[face[3][0] - 1]
 
-                # triangle_normal = (
-                #     evector(B) - evector(A)).cross(evector(C) - evector(A))
-                # # triangle_normal = np.cross(np.subtract(B,A), np.subtract(C,A))
-                # triangle_normal = triangle_normal.normalize()
-                # # triangle_normal = triangle_normal / np.linalg.norm(triangle_normal)
                 first_triangle_normal = (
                     evector(v1) - evector(v0)).cross(evector(v2) - evector(v0))
                 first_triangle_normal = first_triangle_normal.normalize()
@@ -345,13 +344,13 @@ class Renderer:
                     tex_coords.append(vt2)
                     tex_coords.append(vt3)
 
-        primitives = self.primitive_assembly(
-            transformed_verts, tex_coords, normals)
+            primitives = self.primitive_assembly(
+                transformed_verts, tex_coords, normals)
 
-        for prim in primitives:
-            if self.primitive_type == TRIANGLES:
-                self.triangle(prim[0], prim[1], prim[2],
-                              prim[3], prim[4], prim[5], prim[6])
+            for prim in primitives:
+                if self.primitive_type == TRIANGLES:
+                    self.triangle(prim[0], prim[1], prim[2],
+                                  prim[3], prim[4], prim[5], prim[6])
 
     def gl_finish(self, filename):
         bmp_blend(filename, self.width, self.height, self.pixels)

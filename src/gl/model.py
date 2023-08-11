@@ -4,7 +4,7 @@ from .texture import Texture
 
 
 class Model:
-    def __init__(self, filename: str, texture_name: str, translate=(0, 0, 0), rotate=(0, 0, 0), scale=(1, 1, 1)):
+    def __init__(self, filename: str, translate=(0, 0, 0), rotate=(0, 0, 0), scale=(1, 1, 1)):
         """
         Initialize the Model object.
 
@@ -15,11 +15,11 @@ class Model:
             scale (tuple, optional): The scaling values. Defaults to (1, 1, 1).
         """
         self.load_model(filename)
-        self.load_texture(texture_name)
 
         self.translate = translate
         self.rotate = rotate
         self.scale = scale
+        self.set_shaders(None, None)
 
     def load_model(self, filename: str) -> None:
         """
@@ -43,3 +43,12 @@ class Model:
             texture_name (str): The name of the texture.
         """
         self.texture = Texture(texture_name)
+
+    def set_shaders(self, vertex_shader, fragment_shader) -> None:
+        """
+        Set the shaders for the model.
+
+        Args:
+        """
+        self.vertex_shader = vertex_shader
+        self.fragment_shader = fragment_shader

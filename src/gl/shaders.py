@@ -58,5 +58,5 @@ def flat_shader(**kwargs):
         return (0, 0, 0)
 
 
-def toon_shader():
+def ton_shader():
     pass
