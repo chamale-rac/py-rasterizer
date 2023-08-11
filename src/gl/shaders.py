@@ -42,3 +42,12 @@ def fragment_shader(**kwargs):
         color = (1, 1, 1)
 
     return color
+
+
+def flat_shader(**kwargs):
+    directional_light = kwargs["directional_light"]
+    triangle_normal = kwargs["triangle_normal"]
+
+    color = (1, 1, 1)
+
+    return color

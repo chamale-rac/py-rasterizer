@@ -24,6 +24,7 @@ class Renderer:
         self.cam_matrix()
         self.projection_matrix()
         self.clear()
+        self.directional_light = (1, 0, 0)
 
     def clear(self):
         self.pixels = [[self.clear_color for _ in range(self.height)]
@@ -63,8 +64,17 @@ class Renderer:
                                    u * vtA[1] + v * vtB[1] + w * vtC[1])
 
                             if self.fragment_shader is not None:
+                                triangle_normal = (
+                                    evector(B) - evector(A)).cross(evector(C) - evector(A))
+                                # triangle_normal = np.cross(np.subtract(B,A), np.subtract(C,A))
+                                triangle_normal = triangle_normal.normalize()
+                                # triangle_normal = triangle_normal / np.linalg.norm(triangle_normal)
+
                                 colorP = self.fragment_shader(
-                                    tex_coords=uvs, texture=self.active_texture)
+                                    tex_coords=uvs,
+                                    texture=self.active_texture,
+                                    triangle_normal=triangle_normal,
+                                    directional_light=self.directional_light)
                                 self.point(x, y, color(
                                     colorP[0], colorP[1], colorP[2]))
                             else:
