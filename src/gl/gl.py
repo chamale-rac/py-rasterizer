@@ -3,6 +3,8 @@ from math import pi, sin, cos, tan
 from utils.estruct import color
 from utils.emath import barycentric_coords, ematrix, evector
 from utils.efiles import bmp_blend
+import pyautogui
+
 
 from gl.model import Model
 
@@ -24,7 +26,25 @@ class Renderer:
         self.cam_matrix()
         self.projection_matrix()
         self.clear()
-        self.directional_light = evector([1, 0, 0])
+        self.directional_light = evector([-1, 0, -1])
+
+        self.screen_width, self.screen_height = pyautogui.size()
+        self.pixel_size = self.calculate_pixel_size(
+            self.screen_width, self.screen_height, self.width, self.height)
+
+    def calculate_pixel_size(self, screen_width, screen_height, program_width, program_height):
+        screen_pixel_width = screen_width
+        screen_pixel_height = screen_height
+        program_pixel_width = program_width
+        program_pixel_height = program_height
+
+        pixel_size_width = screen_pixel_width / program_pixel_width
+        pixel_size_height = screen_pixel_height / program_pixel_height
+
+        # Calculate the average pixel size
+        pixel_size_avg = (pixel_size_width + pixel_size_height) / 2.0
+
+        return pixel_size_avg
 
     def clear(self):
         self.pixels = [[self.clear_color for _ in range(self.height)]
@@ -66,13 +86,15 @@ class Renderer:
                             self.zbuffer[x][y] = z
 
                             if self.fragment_shader is not None:
+
                                 colorP = self.fragment_shader(
                                     texture=self.active_texture,
                                     tex_coords=tex_coords,
                                     normals=normals,
                                     directional_light=self.directional_light,
                                     barycentric_coords=b_coords,
-                                    cam_matrix=self.cam_matrix)
+                                    cam_matrix=self.cam_matrix,
+                                    pixel_size=self.pixel_size)
                                 self.point(x, y, color(
                                     colorP[0], colorP[1], colorP[2]))
                             else:

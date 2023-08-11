@@ -177,17 +177,21 @@ class Vector:
         self.data = data
 
     def __mul__(self, other) -> 'Vector':
-        """
-        Multiply the vector by a scalar.
+        if isinstance(other, (int, float)):
+            result = [elem * other for elem in self.data]
+            return Vector(result)
+        elif isinstance(other, Vector):
+            if len(self.data) != len(other.data):
+                raise ValueError(
+                    "Vectors must have the same dimension for element-wise multiplication.")
+            result = [self.data[i] * other.data[i]
+                      for i in range(len(self.data))]
+            return Vector(result)
+        else:
+            raise ValueError("Unsupported operand type for multiplication")
 
-        Args:
-            other: A scalar (int or float).
-
-        Returns:
-            The result of the multiplication as a new Vector object.
-        """
-        result = [elem * other for elem in self.data]
-        return Vector(result)
+    def __rmul__(self, other) -> 'Vector':
+        return self.__mul__(other)
 
     def __sub__(self, other) -> 'Vector':
         """
@@ -199,8 +203,15 @@ class Vector:
         Returns:
             The result of the subtraction as a new Vector object.
         """
-        result = [self.data[i] - other.data[i] for i in range(len(self.data))]
-        return Vector(result)
+        if isinstance(other, Vector):
+            if len(self.data) != len(other.data):
+                raise ValueError(
+                    "Vectors must have the same dimension for subtraction.")
+            result = [self.data[i] - other.data[i]
+                      for i in range(len(self.data))]
+            return Vector(result)
+        else:
+            raise ValueError("Unsupported operand type for subtraction")
 
     def normalize(self) -> 'Vector':
         """
@@ -233,6 +244,29 @@ class Vector:
         ]
 
         return Vector(result)
+
+    def __add__(self, other) -> 'Vector':
+        """
+        Add another vector or scalar value to this vector.
+
+        Args:
+            other: Another Vector object or scalar value.
+
+        Returns:
+            The result of the addition as a new Vector object.
+        """
+        if isinstance(other, Vector):
+            if len(self.data) != len(other.data):
+                raise ValueError(
+                    "Vectors must have the same dimension for addition.")
+            result = [self.data[i] + other.data[i]
+                      for i in range(len(self.data))]
+            return Vector(result)
+        elif isinstance(other, (int, float)):
+            result = [elem + other for elem in self.data]
+            return Vector(result)
+        else:
+            raise ValueError("Unsupported operand type for addition")
 
     def dot(self, other) -> float:
         """
