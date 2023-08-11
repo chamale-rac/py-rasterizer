@@ -234,6 +234,24 @@ class Vector:
 
         return Vector(result)
 
+    def dot(self, other) -> float:
+        """
+        Calculate the dot product between this vector and another vector.
+
+        Args:
+            other: Another Vector object.
+
+        Returns:
+            The dot product as a float.
+        """
+        if len(self.data) != len(other.data):
+            raise ValueError(
+                "Dot product is only defined for vectors of the same dimension")
+
+        result = sum(self.data[i] * other.data[i]
+                     for i in range(len(self.data)))
+        return result
+
 
 def ematrix(data) -> Matrix:
     """
