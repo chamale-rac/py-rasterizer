@@ -63,6 +63,8 @@ def gouraud_shader(**kwargs):
 
 
 def camouflage_shader(**kwargs):
+    # this shader may have variables with rare names, but it's cause the initial idea was to make a toon shader
+
     texture = kwargs["texture"]
     tA, tB, tC = kwargs["tex_coords"]
     nA, nB, nC = kwargs["normals"]
@@ -199,6 +201,8 @@ def fractal_shader(**kwargs):
 
 
 def invert_shader(**kwargs):
+    # this shader may have variables with rare names, but it's cause the initial idea was to make a retro anime shader
+
     texture = kwargs["texture"]
     tA, tB, tC = kwargs["tex_coords"]
     nA, nB, nC = kwargs["normals"]
