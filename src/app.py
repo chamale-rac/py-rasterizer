@@ -9,28 +9,40 @@ out_dir = "../out"
 width = 1920
 height = 1080
 
-# left = Model(f"{models_dir}/face.obj",
-#              translate=(-3, 0, -5), scale=(1.5, 1.5, 1.5))
-# left.load_texture(f"{textures_dir}/face.bmp")
-# left.set_shaders(shaders.vertex_shader, shaders.flat_shader)
-
-center = Model(f"{models_dir}/face.obj",
-               translate=(0, 0, -5), scale=(1.5, 1.5, 1.5))
-center.load_texture(f"{textures_dir}/face.bmp")
-center.set_shaders(shaders.vertex_shader, shaders.toon_shader)
-
-# right = Model(f"{models_dir}/face.obj",
-#               translate=(3, 0, -5), scale=(1.5, 1.5, 1.5))
-# right.load_texture(f"{textures_dir}/face.bmp")
-# right.set_shaders(shaders.vertex_shader, shaders.fragment_shader)
-
-
+elephant_camouflage = Model(f"{models_dir}/elephant.obj",
+                            translate=(-0.4, -1, -5), scale=(0.09, 0.09, 0.09), rotate=(0, -60, 0))
+elephant_camouflage.load_texture(f"{textures_dir}/elephant.bmp")
+elephant_camouflage.set_shaders(
+    shaders.vertex_shader, shaders.camouflage_shader)
 renderer = Renderer(width, height)
 renderer.set_clear_color(32/255, 33/255, 36/255)
 renderer.clear()
-# renderer.add_model(left)
-renderer.add_model(center)
-# renderer.add_model(right)
-
+renderer.look_at(cam_pos=(1, 2, 0), eye_pos=(0, 0, -5), rotateZ=0)
+renderer.add_model(elephant_camouflage)
 renderer.gl_render()
-renderer.gl_finish(f"{out_dir}/face_4.bmp")
+renderer.gl_finish(f"{out_dir}/camouflage.bmp")
+
+
+elephant_fractal = Model(f"{models_dir}/elephant.obj",
+                         translate=(-0.4, -1, -5), scale=(0.09, 0.09, 0.09), rotate=(0, -60, 0))
+elephant_fractal.load_texture(f"{textures_dir}/elephant.bmp")
+elephant_fractal.set_shaders(shaders.vertex_shader, shaders.fractal_shader)
+renderer = Renderer(width, height)
+renderer.set_clear_color(32/255, 33/255, 36/255)
+renderer.clear()
+renderer.look_at(cam_pos=(1, 2, 0), eye_pos=(0, 0, -5), rotateZ=0)
+renderer.add_model(elephant_fractal)
+renderer.gl_render()
+renderer.gl_finish(f"{out_dir}/fractal.bmp")
+
+elephant_invert = Model(f"{models_dir}/elephant.obj",
+                        translate=(-0.4, -1, -5), scale=(0.09, 0.09, 0.09), rotate=(0, -60, 0))
+elephant_invert.load_texture(f"{textures_dir}/elephant.bmp")
+elephant_invert.set_shaders(shaders.vertex_shader, shaders.invert_shader)
+renderer = Renderer(width, height)
+renderer.set_clear_color(32/255, 33/255, 36/255)
+renderer.clear()
+renderer.look_at(cam_pos=(1, 2, 0), eye_pos=(0, 0, -5), rotateZ=0)
+renderer.add_model(elephant_invert)
+renderer.gl_render()
+renderer.gl_finish(f"{out_dir}/invert.bmp")

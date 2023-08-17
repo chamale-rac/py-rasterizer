@@ -1,3 +1,4 @@
+import math
 from utils.emath import evector
 
 
@@ -22,54 +23,6 @@ def vertex_shader(vertex, **kwargs):
                  vt.data[3], vt.data[2] / vt.data[3]])
 
     return vt.data[:3]
-
-
-def fragment_shader(**kwargs):
-    """Perform the fragment shader operation on a pixel.
-
-    Args:
-        **kwargs: Additional keyword arguments.
-
-    Returns:
-        The color of the pixel after applying the fragment shader.
-    """
-    tex_coords = kwargs["tex_coords"]
-    texture = kwargs["texture"]
-
-    if texture is not None:
-        color = texture.get_color(tex_coords[0], tex_coords[1])
-    else:
-        color = (1, 1, 1)
-
-    return color
-
-
-def flat_shader(**kwargs):
-    tex_coords = kwargs["tex_coords"]
-    texture = kwargs["texture"]
-    directional_light = kwargs["directional_light"]
-    triangle_normals = kwargs["normals"]
-
-    b = 1.0
-    g = 1.0
-    r = 1.0
-
-    if texture is not None:
-        texture_color = texture.get_color(tex_coords[0], tex_coords[1])
-        b *= texture_color[2]
-        g *= texture_color[1]
-        r *= texture_color[0]
-
-    intensity = triangle_normals.dot(directional_light.negate())
-
-    b *= intensity
-    g *= intensity
-    r *= intensity
-
-    if intensity > 0:
-        return r, g, b
-    else:
-        return (0, 0, 0)
 
 
 def gouraud_shader(**kwargs):
@@ -109,7 +62,7 @@ def gouraud_shader(**kwargs):
         return (0, 0, 0)
 
 
-def toon_shader(**kwargs):
+def camouflage_shader(**kwargs):
     texture = kwargs["texture"]
     tA, tB, tC = kwargs["tex_coords"]
     nA, nB, nC = kwargs["normals"]
@@ -191,3 +144,104 @@ def toon_shader(**kwargs):
     )
 
     return final_color
+
+
+def fractal_shader(**kwargs):
+    texture = kwargs["texture"]
+    tA, tB, tC = kwargs["tex_coords"]
+    nA, nB, nC = kwargs["normals"]
+    directional_light = kwargs["directional_light"]
+    u, v, w = kwargs["barycentric_coords"]
+    cam_matrix = kwargs["cam_matrix"]
+
+    # Fractal parameters
+    fractal_iterations = 100
+    fractal_scale = 0.01
+
+    # Calculate fractal value
+    fractal_value = 0.0
+    p = evector([u, v, w])
+    for _ in range(fractal_iterations):
+        p = evector([
+            abs(p.data[0]) * fractal_scale + u,
+            abs(p.data[1]) * fractal_scale + v,
+            abs(p.data[2]) * fractal_scale + w
+        ])
+        fractal_value += math.sin(p.data[0] * p.data[1] + p.data[1]
+                                  * p.data[2] + p.data[2] * p.data[0]) / fractal_iterations
+
+    b = fractal_value
+    g = fractal_value
+    r = fractal_value
+
+    if texture is not None:
+        tU = u * tA[0] + v * tB[0] + w * tC[0]
+        tV = u * tA[1] + v * tB[1] + w * tC[1]
+        texture_color = texture.get_color(tU, tV)
+        b *= texture_color[2]
+        g *= texture_color[1]
+        r *= texture_color[0]
+
+    normal = evector([u * nA[0] + v * nB[0] + w * nC[0],
+                      u * nA[1] + v * nB[1] + w * nC[1],
+                      u * nA[2] + v * nB[2] + w * nC[2]])
+
+    intensity = normal.dot(directional_light.negate())
+
+    b *= intensity * 1.5
+    g *= intensity * 1.5
+    r *= intensity * 1.5
+
+    if intensity > 0:
+        return r, g, b
+    else:
+        return (0, 0, 0)
+
+
+def invert_shader(**kwargs):
+    texture = kwargs["texture"]
+    tA, tB, tC = kwargs["tex_coords"]
+    nA, nB, nC = kwargs["normals"]
+    u, v, w = kwargs["barycentric_coords"]
+    cam_matrix = kwargs["cam_matrix"]
+    pixel_size = 2  # Increase this value to make the outline thicker
+
+    cam_forward = evector(
+        [cam_matrix.data[0][2], cam_matrix.data[1][2], cam_matrix.data[2][2]])
+
+    # Calculate shading intensity (less affected by light)
+    normal = evector([u * nA[0] + v * nB[0] + w * nC[0],
+                      u * nA[1] + v * nB[1] + w * nC[1],
+                      u * nA[2] + v * nB[2] + w * nC[2]])
+
+    shading_intensity = normal.dot(cam_forward)
+
+    # Retro shading color (invert texture if available)
+    retro_shading_color = (1.0, 1.0, 1.0)  # Default white
+
+    if texture is not None:
+        tU = u * tA[0] + v * tB[0] + w * tC[0]
+        tV = u * tA[1] + v * tB[1] + w * tC[1]
+        texture_color = texture.get_color(tU, tV)
+        retro_shading_color = (
+            1.0 - texture_color[0],
+            1.0 - texture_color[1],
+            1.0 - texture_color[2]
+        )
+
+    # Outline effect
+    cam_dot_normal = cam_forward.dot(normal)
+    line_art_threshold = 0.2
+    outline_thickness = 10
+
+    if cam_dot_normal < line_art_threshold:
+        retro_shading_color = (0.0, 0.0, 0.0)
+
+    # Apply shading and return color
+    retro_color = (
+        max(0, min(1, retro_shading_color[0] * shading_intensity)),
+        max(0, min(1, retro_shading_color[1] * shading_intensity)),
+        max(0, min(1, retro_shading_color[2] * shading_intensity))
+    )
+
+    return retro_color
