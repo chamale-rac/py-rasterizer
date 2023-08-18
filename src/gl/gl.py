@@ -7,6 +7,7 @@ import pyautogui
 
 
 from gl.model import Model
+from gl.texture import Texture
 
 TRIANGLES = 2
 
@@ -22,6 +23,7 @@ class Renderer:
         self.fragment_shader = None
         self.primitive_type = TRIANGLES
         self.active_texture = None
+        self.background = None
         self.viewport(0, 0, width, height)
         self.cam_matrix()
         self.projection_matrix()
@@ -45,6 +47,22 @@ class Renderer:
         pixel_size_avg = (pixel_size_width + pixel_size_height) / 2.0
 
         return pixel_size_avg
+
+    def gl_background_texture(self, filename):
+        self.background = Texture(filename)
+
+    # check why texture height and width make the image slide and not correct colors
+    def gl_clear_background(self):
+        self.clear()
+        if self.background:
+            for x in range(self.viewport_x, self.viewport_x + self.viewport_width + 1):
+                for y in range(self.viewport_y, self.viewport_y + self.viewport_height + 1):
+                    u = (x - self.viewport_x) / self.viewport_width
+                    v = (y - self.viewport_y) / self.viewport_height
+                    texture_color = self.background.get_color(u, v)
+                    if texture_color:
+                        self.point(x, y, color(
+                            texture_color[0], texture_color[1], texture_color[2]))
 
     def clear(self):
         self.pixels = [[self.clear_color for _ in range(self.height)]
@@ -131,10 +149,10 @@ class Renderer:
             width (int): Width of the viewport.
             height (int): Height of the viewport.
         """
-        self.viewport_x = x
-        self.viewport_y = y
-        self.viewport_width = width
-        self.viewport_height = height
+        self.viewport_x = int(x)
+        self.viewport_y = int(y)
+        self.viewport_width = int(width)
+        self.viewport_height = int(height)
 
         self.viewport_matrix = ematrix([[width/2, 0, 0, x + width/2],
                                         [0, height/2, 0, y + height/2],
