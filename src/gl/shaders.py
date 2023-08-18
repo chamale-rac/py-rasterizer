@@ -1,5 +1,5 @@
 import math
-from utils.emath import evector
+from utils.emath import evector, ematrix
 
 
 def vertex_shader(vertex, **kwargs):
@@ -249,3 +249,72 @@ def invert_shader(**kwargs):
     )
 
     return retro_color
+
+
+def normal_map_shader(**kwargs):
+    texture = kwargs["texture"]
+    tA, tB, tC = kwargs["tex_coords"]
+    normal_map = kwargs["normal_map"]
+    nA, nB, nC = kwargs["normals"]
+    directional_light = kwargs["directional_light"]
+    u, v, w = kwargs["barycentric_coords"]
+    cam_matrix = kwargs["cam_matrix"]
+    tangent = kwargs["tangent"]
+
+    b = 1.0
+    g = 1.0
+    r = 1.0
+
+    tU = u * tA[0] + v * tB[0] + w * tC[0]
+    tV = u * tA[1] + v * tB[1] + w * tC[1]
+    if texture is not None:
+
+        texture_color = texture.get_color(tU, tV)
+        b *= texture_color[2]
+        g *= texture_color[1]
+        r *= texture_color[0]
+
+    normal = evector([u * nA[0] + v * nB[0] + w * nC[0],
+                      u * nA[1] + v * nB[1] + w * nC[1],
+                      u * nA[2] + v * nB[2] + w * nC[2]])
+
+    if normal_map is not None:
+        texture_normal = normal_map.get_color(tU, tV)
+        texture_normal = evector([
+            texture_normal[0] * 2 - 1,
+            texture_normal[1] * 2 - 1,
+            texture_normal[2] * 2 - 1
+        ])
+        texture_normal = texture_normal.normalize()
+
+        bitangent = normal.cross(tangent)
+        bitangent = bitangent.normalize()
+
+        tangent = normal.cross(bitangent)
+        tangent = tangent.normalize()
+
+        tangent_matrix = ematrix([
+            [tangent.data[0], bitangent.data[0], normal.data[0]],
+            [tangent.data[1], bitangent.data[1], normal.data[1]],
+            [tangent.data[2], bitangent.data[2], normal.data[2]]
+        ])
+
+        texture_normal = tangent_matrix @ texture_normal
+        texture_normal = evector([
+            texture_normal.data[0],
+            texture_normal.data[1],
+            texture_normal.data[2]
+        ])
+        texture_normal = texture_normal.normalize()
+        intensity = texture_normal.dot(directional_light.negate())
+    else:
+        intensity = normal.dot(directional_light.negate())
+
+    b *= intensity
+    g *= intensity
+    r *= intensity
+
+    if intensity > 0:
+        return r, g, b
+    else:
+        return (0, 0, 0)

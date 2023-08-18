@@ -20,6 +20,7 @@ class Model:
         self.rotate = rotate
         self.scale = scale
         self.texture = None
+        self.normal_map = None
         self.set_shaders(None, None)
 
     def load_model(self, filename: str) -> None:
@@ -44,6 +45,15 @@ class Model:
             texture_name (str): The name of the texture.
         """
         self.texture = Texture(texture_name)
+
+    def load_normal_map(self, normal_map_name: str) -> None:
+        """
+        Load the normal map for the model.
+
+        Args:
+            normal_map_name (str): The name of the normal map.
+        """
+        self.normal_map = Texture(normal_map_name)
 
     def set_shaders(self, vertex_shader, fragment_shader) -> None:
         """

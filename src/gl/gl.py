@@ -23,6 +23,7 @@ class Renderer:
         self.fragment_shader = None
         self.primitive_type = TRIANGLES
         self.active_texture = None
+        self.active_normal_map = None
         self.background = None
         self.viewport(0, 0, width, height)
         self.cam_matrix()
@@ -80,15 +81,35 @@ class Renderer:
         if 0 <= x < self.width and 0 <= y < self.height:
             self.pixels[x][y] = clr or self.curr_color
 
-    def triangle(self, verts, tex_coords, normals):
-        A = verts[0]
-        B = verts[1]
-        C = verts[2]
+    def triangle(self, transformed_verts,  untransformed_verts, tex_coords, normals):
+        A = transformed_verts[0]
+        B = transformed_verts[1]
+        C = transformed_verts[2]
+
+        A_untransformed = untransformed_verts[0]
+        B_untransformed = untransformed_verts[1]
+        C_untransformed = untransformed_verts[2]
 
         min_x = round(min(A[0], B[0], C[0]))
         max_x = round(max(A[0], B[0], C[0]))
         min_y = round(min(A[1], B[1], C[1]))
         max_y = round(max(A[1], B[1], C[1]))
+
+        edge_1 = evector(B_untransformed) - evector(A_untransformed)
+        edge_2 = evector(C_untransformed) - evector(A_untransformed)
+
+        delta_uv1 = evector(tex_coords[1]) - evector(tex_coords[0])
+        delta_uv2 = evector(tex_coords[2]) - evector(tex_coords[0])
+
+        f = 1/(delta_uv1.data[0] * delta_uv2.data[1] -
+               delta_uv2.data[0] * delta_uv1.data[1])
+
+        tangent = evector([f * (delta_uv2.data[1] * edge_1.data[0] - delta_uv1.data[1] * edge_2.data[0]),
+                           f * (delta_uv2.data[1] * edge_1.data[1] -
+                                delta_uv1.data[1] * edge_2.data[1]),
+                           f * (delta_uv2.data[1] * edge_1.data[2] - delta_uv1.data[1] * edge_2.data[2])])
+
+        tangent = tangent.normalize()
 
         for x in range(min_x, max_x + 1):
             for y in range(min_y, max_y + 1):
@@ -107,35 +128,40 @@ class Renderer:
 
                                 colorP = self.fragment_shader(
                                     texture=self.active_texture,
+                                    normal_map=self.active_normal_map,
                                     tex_coords=tex_coords,
                                     normals=normals,
                                     directional_light=self.directional_light,
                                     barycentric_coords=b_coords,
                                     cam_matrix=self.cam_matrix,
-                                    pixel_size=self.pixel_size)
+                                    pixel_size=self.pixel_size,
+                                    tangent=tangent)
                                 self.point(x, y, color(
                                     colorP[0], colorP[1], colorP[2]))
                             else:
                                 self.point(x, y)
 
-    def primitive_assembly(self, t_verts, t_tex_coords, normals):
+    def primitive_assembly(self, t_verts, u_verts, t_tex_coords, normals):
         primitives = []
 
         if self.primitive_type == TRIANGLES:
             for i in range(0, len(t_verts), 3):
                 triangle = []
                 c_verts = []
+                ux_verts = []
                 c_tex_coords = []
                 c_normals = []
 
                 for j in range(3):
                     c_verts.append(t_verts[i + j])
                 for j in range(3):
+                    ux_verts.append(u_verts[i + j])
+                for j in range(3):
                     c_tex_coords.append(t_tex_coords[i + j])
                 for j in range(3):
                     c_normals.append(normals[i + j])
 
-                triangle = [c_verts, c_tex_coords, c_normals]
+                triangle = [c_verts, ux_verts, c_tex_coords, c_normals]
                 primitives.append(triangle)
 
         return primitives
@@ -330,6 +356,7 @@ class Renderer:
 
         for model in self.objects:
             transformed_verts = []
+            untransformed_verts = []
             tex_coords = []
             normals = []
 
@@ -337,6 +364,7 @@ class Renderer:
             self.fragment_shader = model.fragment_shader
 
             self.active_texture = model.texture
+            self.active_normal_map = model.normal_map
             model_matrix = self.model_matrix(
                 model.translate, model.rotate, model.scale)
 
@@ -358,6 +386,13 @@ class Renderer:
                 #         evector(v2) - evector(v0)).cross(evector(v3) - evector(v0))
                 #     second_triangle_normal = second_triangle_normal.normalize()
                 #     normals.append(second_triangle_normal)
+                untransformed_verts.append(v0)
+                untransformed_verts.append(v1)
+                untransformed_verts.append(v2)
+                if vertCount == 4:
+                    untransformed_verts.append(v0)
+                    untransformed_verts.append(v2)
+                    untransformed_verts.append(v3)
 
                 if self.vertex_shader:
                     v0 = self.vertex_shader(v0, model_matrix=model_matrix, view_matrix=self.view_matrix,
@@ -407,11 +442,11 @@ class Renderer:
                     normals.append(vn3)
 
             primitives = self.primitive_assembly(
-                transformed_verts, tex_coords, normals)
+                transformed_verts, untransformed_verts, tex_coords, normals)
 
             for prim in primitives:
                 if self.primitive_type == TRIANGLES:
-                    self.triangle(prim[0], prim[1], prim[2])
+                    self.triangle(prim[0], prim[1], prim[2], prim[3])
 
     def gl_finish(self, filename):
         bmp_blend(filename, self.width, self.height, self.pixels)
