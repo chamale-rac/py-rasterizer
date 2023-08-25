@@ -1,10 +1,8 @@
-import numpy as np
 from math import pi, sin, cos, tan
 from utils.estruct import color
 from utils.emath import barycentric_coords, ematrix, evector
 from utils.efiles import bmp_blend
 
-from gl.model import Model
 from gl.texture import Texture
 
 TRIANGLES = 2
