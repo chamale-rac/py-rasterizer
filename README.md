@@ -1,6 +1,6 @@
-# 🐍 py-rasterizer 🖼️ AKA Lab 2: Shaders
+# 🐍 py-rasterizer 🖼️ Proyecto 1: Rasterizer
 
-Welcome to the py-rasterizer repository! This Python-based implementation is a powerful (giño giño...) tool for rasterizing BMP files.
+Welcome to the py-rasterizer repository! This Python-based implementation is a powerful (giño giño...) tool for rasterizing 3d models into BMP files.
 
 ## 🚀 How to execute it?
 
@@ -10,19 +10,32 @@ Simply run the next commands:
 cd src
 ```
 
+To get the bpm with no shaders use:
+
 ``` bash
-python app.py
+python no_shaders.py
 ```
 
-That's all, now check the results on models on [./out/](./out/)
+Otherwise:
+
+``` bash
+python with_shaders.py
+```
+
+That's all, now check the results on models on the dir [./out/](./out/)
 
 ## 🎭 Show off
 
-| shader                    | result                                                                                                      |
+| with shaders              | no shaders                                                                                                      |
 |---------------------------|-------------------------------------------------------------------------------------------------------------|
 | gouraud shader (original) | ![image](https://github.com/chamale-rac/py-rasterizer/assets/63200593/f03f2f77-ba66-46b1-9078-98f85f2a9526) |
-| fractal shader            | ![image](https://github.com/chamale-rac/py-rasterizer/assets/63200593/ada62996-837d-4382-9e62-dcd2d9e20375) |
-| invert shader             | ![image](https://github.com/chamale-rac/py-rasterizer/assets/63200593/3f3dcef5-415e-47c0-8b55-47d4f668ddea) |
-| camouflage shader         | ![image](https://github.com/chamale-rac/py-rasterizer/assets/63200593/5cc94dc1-ac75-4096-b704-7dc68bdc09be) |
+
+## ✅ Ojectives Achieved
+
+| criteria            |done                                                                                                       |
+|---------------------------|-------------------------------------------------------------------------------------------------------------|
+| models| fueron utilizados 11 modelos en la escena final|
+
+| models| fueron utilizados 11 modelos en la escena final|
 
 🧠 Reminder: can find the original .bpm renders at [./out/](./out/)
