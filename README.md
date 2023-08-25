@@ -26,9 +26,8 @@ That's all, now check the results on models on the dir [./out/](./out/)
 
 ## 🎭 Show off
 
-| with shaders              | no shaders                                                                                                      |
+| 😈 With shaders              | 😇 No shaders                                                                                                      |
 |---------------------------|-------------------------------------------------------------------------------------------------------------|
-| gouraud shader (original) | ![image](https://github.com/chamale-rac/py-rasterizer/assets/63200593/f03f2f77-ba66-46b1-9078-98f85f2a9526) |
-
+| ![image](https://github.com/chamale-rac/py-rasterizer/assets/63200593/6e7a6a03-92c5-49bf-bfef-13cb637801c0) | ![image](https://github.com/chamale-rac/py-rasterizer/assets/63200593/842220e4-2b07-4b75-b80a-293914f63b47)  |
 
 🧠 Reminder: can find the original .bpm renders at [./out/](./out/)
