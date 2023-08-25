@@ -1,19 +1,28 @@
-# 🐍 py-rasterizer 🖼️
+# 🐍 py-rasterizer 🖼️ AKA Lab 2: Shaders
+
 Welcome to the py-rasterizer repository! This Python-based implementation is a powerful (giño giño...) tool for rasterizing BMP files.
 
-## 🚀 Getting Started
-To get started with py-rasterizer, first clone this repository to your local machine. Then, make sure you have Python installed and use py-rasterizer, by simply running the next command:
+## 🚀 How to execute it?
+
+Simply run the next commands:
+
+``` bash
+cd src
+```
 
 ``` bash
 python app.py
 ```
-This program rasterize .obj files into BMP files. By the moment just some features are avaible, like rotation, transformation       
 
-## 📝 Contributing
-If you'd like to contribute to py-rasterizer, feel free to submit a pull request. The only restriction of use is for users who study Graphic Computing in 2023 second cycle at UVG. 
-
-## 📬 Contact
-If you have any questions or comments about py-rasterizer, please feel free to reach out to me at 4444@schr.tech
+That's all, now check the results on models on [./out/](./out/)
 
 ## 🎭 Show off
-![output](https://github.com/chamale-rac/py-rasterizer/assets/63200593/c1e20f70-38cf-42b6-8f9c-f4cd050664b4)
+
+| shader                    | result                                                                                                      |
+|---------------------------|-------------------------------------------------------------------------------------------------------------|
+| gouraud shader (original) | ![image](https://github.com/chamale-rac/py-rasterizer/assets/63200593/f03f2f77-ba66-46b1-9078-98f85f2a9526) |
+| fractal shader            | ![image](https://github.com/chamale-rac/py-rasterizer/assets/63200593/ada62996-837d-4382-9e62-dcd2d9e20375) |
+| invert shader             | ![image](https://github.com/chamale-rac/py-rasterizer/assets/63200593/3f3dcef5-415e-47c0-8b55-47d4f668ddea) |
+| camouflage shader         | ![image](https://github.com/chamale-rac/py-rasterizer/assets/63200593/5cc94dc1-ac75-4096-b704-7dc68bdc09be) |
+
+🧠 Reminder: can find the original .bpm renders at [./out/](./out/)
