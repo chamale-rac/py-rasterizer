@@ -222,7 +222,10 @@ class Vector:
         """
         magnitude = math.sqrt(sum(elem ** 2 for elem in self.data))
         # Return a normalized vector as a new Vector object
-        return self * (1.0 / magnitude)
+        if magnitude != 0:
+            return self * (1.0 / magnitude)
+        else:
+            return self
 
     def cross(self, other) -> 'Vector':
         """

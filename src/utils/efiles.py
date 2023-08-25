@@ -50,6 +50,7 @@ def bmp_texture(filename):
     Returns:
         A list of lists of RGB tuples representing the pixel data.
     """
+    print(f"Reading texture file {filename}...")
     pixels = []
 
     with open(filename, "rb") as image:

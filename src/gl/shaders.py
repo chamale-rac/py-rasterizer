@@ -52,14 +52,14 @@ def gouraud_shader(**kwargs):
 
     intensity = normal.dot(directional_light.negate())
 
-    b *= intensity
-    g *= intensity
-    r *= intensity
+    if intensity < 0.5:
+        intensity = 0.5
 
-    if intensity > 0:
-        return r, g, b
-    else:
-        return (0, 0, 0)
+    b *= intensity*1.25
+    g *= intensity*1.25
+    r *= intensity*1.25
+
+    return max(0, min(1, r)), max(0, min(1, g)), max(0, min(1, b))
 
 
 def camouflage_shader(**kwargs):

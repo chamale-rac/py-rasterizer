@@ -15,7 +15,7 @@ class Model:
             scale (tuple, optional): The scaling values. Defaults to (1, 1, 1).
         """
         self.load_model(filename)
-
+        self.filename = filename
         self.translate = translate
         self.rotate = rotate
         self.scale = scale

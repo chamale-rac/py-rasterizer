@@ -1,0 +1,12 @@
+# Blender 3.6.0 MTL File: 'None'
+# www.blender.org
+
+newmtl Материал.001
+Ka 1.000000 1.000000 1.000000
+Ks 0.530000 0.530000 0.530000
+Ke 0.000000 0.000000 0.000000
+Ni 1.450000
+d 1.000000
+illum 2
+map_Kd C:/Users/chama/Downloads/3d/casual-house/textures/Hause_01_<UDIM>_BaseColor.png
+map_Ns C:/Users/chama/Downloads/3d/casual-house/source/Users/qfors/Documents/Документы — MacBook Pro — Anton/Models/Low_Poly/Hause_Lowpoly/Texture/8K/Hause_01_1001_Roughness.png

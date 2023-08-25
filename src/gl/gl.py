@@ -3,8 +3,6 @@ from math import pi, sin, cos, tan
 from utils.estruct import color
 from utils.emath import barycentric_coords, ematrix, evector
 from utils.efiles import bmp_blend
-import pyautogui
-
 
 from gl.model import Model
 from gl.texture import Texture
@@ -29,25 +27,10 @@ class Renderer:
         self.cam_matrix()
         self.projection_matrix()
         self.clear()
-        self.directional_light = evector([-1, 0, -1])
+        self.directional_light = evector([0, 0, 0])
 
-        self.screen_width, self.screen_height = pyautogui.size()
-        self.pixel_size = self.calculate_pixel_size(
-            self.screen_width, self.screen_height, self.width, self.height)
-
-    def calculate_pixel_size(self, screen_width, screen_height, program_width, program_height):
-        screen_pixel_width = screen_width
-        screen_pixel_height = screen_height
-        program_pixel_width = program_width
-        program_pixel_height = program_height
-
-        pixel_size_width = screen_pixel_width / program_pixel_width
-        pixel_size_height = screen_pixel_height / program_pixel_height
-
-        # Calculate the average pixel size
-        pixel_size_avg = (pixel_size_width + pixel_size_height) / 2.0
-
-        return pixel_size_avg
+    def set_directional_light(self, x, y, z):
+        self.directional_light = evector([x, y, z])
 
     def gl_background_texture(self, filename):
         self.background = Texture(filename)
@@ -86,30 +69,37 @@ class Renderer:
         B = transformed_verts[1]
         C = transformed_verts[2]
 
-        A_untransformed = untransformed_verts[0]
-        B_untransformed = untransformed_verts[1]
-        C_untransformed = untransformed_verts[2]
-
         min_x = round(min(A[0], B[0], C[0]))
         max_x = round(max(A[0], B[0], C[0]))
         min_y = round(min(A[1], B[1], C[1]))
         max_y = round(max(A[1], B[1], C[1]))
 
-        edge_1 = evector(B_untransformed) - evector(A_untransformed)
-        edge_2 = evector(C_untransformed) - evector(A_untransformed)
+        if self.active_normal_map is not None:
+            A_untransformed = untransformed_verts[0]
+            B_untransformed = untransformed_verts[1]
+            C_untransformed = untransformed_verts[2]
 
-        delta_uv1 = evector(tex_coords[1]) - evector(tex_coords[0])
-        delta_uv2 = evector(tex_coords[2]) - evector(tex_coords[0])
+            edge_1 = evector(B_untransformed) - evector(A_untransformed)
+            edge_2 = evector(C_untransformed) - evector(A_untransformed)
 
-        f = 1/(delta_uv1.data[0] * delta_uv2.data[1] -
-               delta_uv2.data[0] * delta_uv1.data[1])
+            delta_uv1 = evector(tex_coords[1]) - evector(tex_coords[0])
+            delta_uv2 = evector(tex_coords[2]) - evector(tex_coords[0])
 
-        tangent = evector([f * (delta_uv2.data[1] * edge_1.data[0] - delta_uv1.data[1] * edge_2.data[0]),
-                           f * (delta_uv2.data[1] * edge_1.data[1] -
-                                delta_uv1.data[1] * edge_2.data[1]),
-                           f * (delta_uv2.data[1] * edge_1.data[2] - delta_uv1.data[1] * edge_2.data[2])])
+            delta = delta_uv1.data[0] * delta_uv2.data[1] - \
+                delta_uv2.data[0] * delta_uv1.data[1]
+            if delta == 0:
+                f = 0
+            else:
+                f = 1 / delta
 
-        tangent = tangent.normalize()
+            tangent = evector([f * (delta_uv2.data[1] * edge_1.data[0] - delta_uv1.data[1] * edge_2.data[0]),
+                               f * (delta_uv2.data[1] * edge_1.data[1] -
+                                    delta_uv1.data[1] * edge_2.data[1]),
+                               f * (delta_uv2.data[1] * edge_1.data[2] - delta_uv1.data[1] * edge_2.data[2])])
+
+            tangent = tangent.normalize()
+        else:
+            tangent = None
 
         for x in range(min_x, max_x + 1):
             for y in range(min_y, max_y + 1):
@@ -134,7 +124,6 @@ class Renderer:
                                     directional_light=self.directional_light,
                                     barycentric_coords=b_coords,
                                     cam_matrix=self.cam_matrix,
-                                    pixel_size=self.pixel_size,
                                     tangent=tangent)
                                 self.point(x, y, color(
                                     colorP[0], colorP[1], colorP[2]))
@@ -355,6 +344,7 @@ class Renderer:
         normals = []
 
         for model in self.objects:
+            print("Rendering model: " + model.filename)
             transformed_verts = []
             untransformed_verts = []
             tex_coords = []
@@ -431,7 +421,7 @@ class Renderer:
                 vn1 = model.normals[face[1][2] - 1]
                 vn2 = model.normals[face[2][2] - 1]
                 if vertCount == 4:
-                    vn3 = model.tex_coords[face[3][2] - 1]
+                    vn3 = model.normals[face[3][2] - 1]
 
                 normals.append(vn0)
                 normals.append(vn1)
