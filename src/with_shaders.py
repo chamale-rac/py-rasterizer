@@ -5,10 +5,6 @@ import time
 
 start_time = time.time()
 
-
-models_dir = "../models"
-textures_dir = models_dir + "/textures"
-normals_dir = models_dir + "/normals"
 out_dir = "../out"
 
 width = 1920

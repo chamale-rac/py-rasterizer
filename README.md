@@ -30,12 +30,5 @@ That's all, now check the results on models on the dir [./out/](./out/)
 |---------------------------|-------------------------------------------------------------------------------------------------------------|
 | gouraud shader (original) | ![image](https://github.com/chamale-rac/py-rasterizer/assets/63200593/f03f2f77-ba66-46b1-9078-98f85f2a9526) |
 
-## ✅ Ojectives Achieved
-
-| criteria            |done                                                                                                       |
-|---------------------------|-------------------------------------------------------------------------------------------------------------|
-| models| fueron utilizados 11 modelos en la escena final|
-
-| models| fueron utilizados 11 modelos en la escena final|
 
 🧠 Reminder: can find the original .bpm renders at [./out/](./out/)
