@@ -86,6 +86,7 @@ def obj_model(filename):
     Returns:
         A tuple containing the vertex, texture coordinate, normal, and face data.
     """
+    print(f"Reading OBJ file {filename}...")
 
     with open(filename, 'r') as file:
         lines = file.read().splitlines()
